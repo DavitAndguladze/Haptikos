@@ -14,12 +14,10 @@
 		4C7034E07F75C7A08B96BCE3 /* HapticEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 460CE983F16AED65DBB4055B /* HapticEvent.swift */; };
 		7F52A104C1162353FE5148D9 /* QRScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7650A666027F473AAE43466C /* QRScannerView.swift */; };
 		853FBC7C5031C493C889B90C /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6DF0C3BC2E92216F0228D53 /* ContentView.swift */; };
-		A8BEF5704DAFB3007372D06C /* CoreHaptics.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 74D0BBBEB08450F3FCDB59C7 /* CoreHaptics.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		920FA5522F8A312500899178 /* SocketIO in Frameworks */ = {isa = PBXBuildFile; productRef = 920FA5512F8A312500899178 /* SocketIO */; };
 		B6B2F8CF9415FCF2E03E9E4C /* PulsingOrbView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B42D5CE394C8789422C542E /* PulsingOrbView.swift */; };
 		B7F130A2D2CF319A41274A45 /* HapticSenseApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ABB9C9698529732A0EDC09B /* HapticSenseApp.swift */; };
-		BC7B5C3D41F7366530910A74 /* AVFoundation.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 2B2FD8A4EF7333A210FCDE86 /* AVFoundation.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D9A30935E7B1AFAC235D74BD /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2B2FD8A4EF7333A210FCDE86 /* AVFoundation.framework */; };
-		E8BBEAB82CD9491512CA36EF /* SocketIOClient in Frameworks */ = {isa = PBXBuildFile; productRef = 4B0C56C29CE6C0AF5EE4D040 /* SocketIOClient */; };
 		F1A2B3C4D5E6F7A8B9C0D1E2 /* HapticsDebugView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6A7B8C9D0E1F2 /* HapticsDebugView.swift */; };
 /* End PBXBuildFile section */
 
@@ -30,8 +28,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				A8BEF5704DAFB3007372D06C /* CoreHaptics.framework in Embed Frameworks */,
-				BC7B5C3D41F7366530910A74 /* AVFoundation.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -40,17 +36,17 @@
 
 /* Begin PBXFileReference section */
 		1ABB9C9698529732A0EDC09B /* HapticSenseApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticSenseApp.swift; sourceTree = "<group>"; };
-		2B2FD8A4EF7333A210FCDE86 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = AVFoundation.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		2B2FD8A4EF7333A210FCDE86 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		3B42D5CE394C8789422C542E /* PulsingOrbView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PulsingOrbView.swift; sourceTree = "<group>"; };
 		460CE983F16AED65DBB4055B /* HapticEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticEvent.swift; sourceTree = "<group>"; };
 		5B1788D7314B968EB2C34029 /* SocketManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocketManager.swift; sourceTree = "<group>"; };
-		5E9B7D8E61E140C26C6A2BB6 /* HapticSense.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = HapticSense.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		74D0BBBEB08450F3FCDB59C7 /* CoreHaptics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = CoreHaptics.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		5E9B7D8E61E140C26C6A2BB6 /* HapticSense.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HapticSense.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		74D0BBBEB08450F3FCDB59C7 /* CoreHaptics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreHaptics.framework; path = System/Library/Frameworks/CoreHaptics.framework; sourceTree = SDKROOT; };
 		7650A666027F473AAE43466C /* QRScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRScannerView.swift; sourceTree = "<group>"; };
 		96715353C6FD6D1785B2AEB5 /* HapticPatterns.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticPatterns.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F6A7B8C9D0E1F2 /* HapticsDebugView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticsDebugView.swift; sourceTree = "<group>"; };
 		A6DF0C3BC2E92216F0228D53 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		C94530AE1A801DC4F2773D2F /* .cursorrules */ = {isa = PBXFileReference; path = .cursorrules; sourceTree = "<group>"; };
+		C94530AE1A801DC4F2773D2F /* .cursorrules */ = {isa = PBXFileReference; lastKnownFileType = text; path = .cursorrules; sourceTree = "<group>"; };
 		D361DAB8A8038AE1BC2CE2D9 /* HapticEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticEngine.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -59,7 +55,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E8BBEAB82CD9491512CA36EF /* SocketIOClient in Frameworks */,
+				920FA5522F8A312500899178 /* SocketIO in Frameworks */,
 				49BE56009766B5D4A344DC56 /* CoreHaptics.framework in Frameworks */,
 				D9A30935E7B1AFAC235D74BD /* AVFoundation.framework in Frameworks */,
 			);
@@ -160,7 +156,7 @@
 			);
 			name = HapticSense;
 			packageProductDependencies = (
-				4B0C56C29CE6C0AF5EE4D040 /* SocketIOClient */,
+				920FA5512F8A312500899178 /* SocketIO */,
 			);
 			productName = HapticSense;
 			productReference = 5E9B7D8E61E140C26C6A2BB6 /* HapticSense.app */;
@@ -174,8 +170,6 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1600;
-				TargetAttributes = {
-				};
 			};
 			buildConfigurationList = 8B77AF7F6B0B47D5E479C9D4 /* Build configuration list for PBXProject "HapticSense" */;
 			developmentRegion = en;
@@ -187,7 +181,7 @@
 			mainGroup = 3231FACD66528ACCFE7CF700;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				AD537D816EB72C14F70D9540 /* XCRemoteSwiftPackageReference "socket.io-client-swift" */,
+				AD537D816EB72C14F70D9540 /* XCRemoteSwiftPackageReference "socket" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 62B0515DBEBEFB41A8308D9C /* Products */;
@@ -283,10 +277,8 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = L3Y658A93S;
 				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSCameraUsageDescription = "Camera access is needed to scan the server QR code for pairing.";
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = HapticSense/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -306,10 +298,8 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = L3Y658A93S;
 				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSCameraUsageDescription = "Camera access is needed to scan the server QR code for pairing.";
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = HapticSense/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -408,7 +398,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		AD537D816EB72C14F70D9540 /* XCRemoteSwiftPackageReference "socket.io-client-swift" */ = {
+		AD537D816EB72C14F70D9540 /* XCRemoteSwiftPackageReference "socket" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/socketio/socket.io-client-swift";
 			requirement = {
@@ -419,10 +409,10 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		4B0C56C29CE6C0AF5EE4D040 /* SocketIOClient */ = {
+		920FA5512F8A312500899178 /* SocketIO */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = AD537D816EB72C14F70D9540 /* XCRemoteSwiftPackageReference "socket.io-client-swift" */;
-			productName = SocketIOClient;
+			package = AD537D816EB72C14F70D9540 /* XCRemoteSwiftPackageReference "socket" */;
+			productName = SocketIO;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

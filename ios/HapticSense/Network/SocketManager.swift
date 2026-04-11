@@ -28,7 +28,8 @@ final class HapticSocketManager: ObservableObject {
                 .forceWebsockets(true),
                 .reconnects(true),
                 .reconnectWait(1),
-                .log(false)
+                .log(false),
+                .connectParams(["role": "phone"])
             ]
         )
         self.manager = manager

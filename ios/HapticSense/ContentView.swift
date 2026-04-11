@@ -2,6 +2,9 @@ import SwiftUI
 
 struct ContentView: View {
     @EnvironmentObject var socketManager: HapticSocketManager
+    #if DEBUG
+    @State private var showDebug = false
+    #endif
 
     @State private var showScanner = false
     @State private var manualIP = ""
@@ -81,6 +84,22 @@ struct ContentView: View {
             QRScannerView()
                 .environmentObject(socketManager)
         }
+        #if DEBUG
+        .overlay(alignment: .topTrailing) {
+            Button("Debug") { showDebug = true }
+                .font(.system(size: 13, weight: .medium))
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(Color.white.opacity(0.1))
+                .foregroundStyle(.white.opacity(0.6))
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+                .padding(.top, 12)
+                .padding(.trailing, 16)
+        }
+        .sheet(isPresented: $showDebug) {
+            HapticsDebugView()
+        }
+        #endif
     }
 
     private func connectManual() {

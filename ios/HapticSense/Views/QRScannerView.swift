@@ -5,7 +5,7 @@ struct QRScannerView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject var socketManager: HapticSocketManager
 
-    @State private var scannedURL: URL?
+    @State private var cameraAuthorized = false
     @State private var permissionDenied = false
 
     var body: some View {
@@ -15,17 +15,16 @@ struct QRScannerView: View {
 
                 if permissionDenied {
                     cameraFallbackView
-                } else {
+                } else if cameraAuthorized {
                     QRCameraPreview { url in
-                        scannedURL = url
                         socketManager.connect(to: url)
                         dismiss()
                     }
                     .ignoresSafeArea()
 
-                    // Viewfinder overlay
                     viewfinderOverlay
                 }
+                // else: black screen while permission dialog is showing
             }
             .navigationTitle("Scan Server QR")
             .navigationBarTitleDisplayMode(.inline)
@@ -91,10 +90,14 @@ struct QRScannerView: View {
     private func checkCameraPermission() async {
         switch AVCaptureDevice.authorizationStatus(for: .video) {
         case .authorized:
-            break
+            cameraAuthorized = true
         case .notDetermined:
             let granted = await AVCaptureDevice.requestAccess(for: .video)
-            if !granted { permissionDenied = true }
+            if granted {
+                cameraAuthorized = true
+            } else {
+                permissionDenied = true
+            }
         default:
             permissionDenied = true
         }
@@ -110,8 +113,8 @@ private struct QRCameraPreview: UIViewRepresentable {
         Coordinator(onScan: onScan)
     }
 
-    func makeUIView(context: Context) -> UIView {
-        let view = UIView(frame: .zero)
+    func makeUIView(context: Context) -> CameraPreviewView {
+        let view = CameraPreviewView()
         view.backgroundColor = .black
 
         let session = AVCaptureSession()
@@ -132,7 +135,7 @@ private struct QRCameraPreview: UIViewRepresentable {
 
         let previewLayer = AVCaptureVideoPreviewLayer(session: session)
         previewLayer.videoGravity = .resizeAspectFill
-        previewLayer.frame = UIScreen.main.bounds
+        view.previewLayer = previewLayer
         view.layer.addSublayer(previewLayer)
         context.coordinator.previewLayer = previewLayer
 
@@ -143,12 +146,23 @@ private struct QRCameraPreview: UIViewRepresentable {
         return view
     }
 
-    func updateUIView(_ uiView: UIView, context: Context) {
-        context.coordinator.previewLayer?.frame = uiView.bounds
+    func updateUIView(_ uiView: CameraPreviewView, context: Context) {
+        uiView.previewLayer?.frame = uiView.bounds
     }
 
-    static func dismantleUIView(_ uiView: UIView, coordinator: Coordinator) {
+    static func dismantleUIView(_ uiView: CameraPreviewView, coordinator: Coordinator) {
         coordinator.session?.stopRunning()
+    }
+
+    // MARK: - CameraPreviewView
+
+    final class CameraPreviewView: UIView {
+        var previewLayer: AVCaptureVideoPreviewLayer?
+
+        override func layoutSubviews() {
+            super.layoutSubviews()
+            previewLayer?.frame = bounds
+        }
     }
 
     // MARK: - Coordinator
