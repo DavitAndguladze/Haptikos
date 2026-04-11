@@ -313,6 +313,76 @@ body {
   white-space: nowrap;
 }
 
+/* ─── Sync calibration row ──────────────────────────────────────────────────── */
+.sync-row {
+  display:         flex;
+  align-items:     center;
+  gap:             10px;
+  font-size:       0.75rem;
+  color:           var(--text-muted);
+  margin-top:      4px;
+  flex-wrap:       wrap;
+  justify-content: center;
+}
+
+.sync-label {
+  color:       var(--text-muted);
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  font-size:   0.72rem;
+}
+
+.sync-slider {
+  -webkit-appearance: none;
+  appearance:         none;
+  width:              140px;
+  height:             3px;
+  border-radius:      2px;
+  background:         var(--bg-card-border);
+  outline:            none;
+  cursor:             pointer;
+}
+
+.sync-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width:         14px;
+  height:        14px;
+  border-radius: 50%;
+  background:    var(--cyan);
+  box-shadow:    0 0 6px rgba(0, 240, 255, 0.5);
+  cursor:        pointer;
+}
+
+.sync-slider::-moz-range-thumb {
+  width:         14px;
+  height:        14px;
+  border:        none;
+  border-radius: 50%;
+  background:    var(--cyan);
+  box-shadow:    0 0 6px rgba(0, 240, 255, 0.5);
+  cursor:        pointer;
+}
+
+.sync-value {
+  font-family: var(--font-mono);
+  font-size:   0.72rem;
+  color:       var(--cyan);
+  min-width:   44px;
+  text-align:  right;
+  white-space: nowrap;
+}
+
+.bpm-badge {
+  font-family:   var(--font-mono);
+  font-size:     0.72rem;
+  color:         #1DB954;
+  white-space:   nowrap;
+  padding:       2px 6px;
+  border:        1px solid rgba(29, 185, 84, 0.35);
+  border-radius: 4px;
+  background:    rgba(29, 185, 84, 0.08);
+}
+
 /* ─── Responsive ────────────────────────────────────────────────────── */
 @media (max-width: 700px) {
   .page        { padding: 0 20px 40px; }

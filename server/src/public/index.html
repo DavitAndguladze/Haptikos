@@ -20,13 +20,21 @@
       <div class="controls">
         <div class="mode-row">
           <button id="startBtn">Start Listening</button>
-          <button id="spotifyBtn" class="btn-spotify">Paste Spotify Token</button>
+          <button id="spotifyBtn" class="btn-spotify">Connect Spotify</button>
         </div>
         <p class="audio-hint" id="audioHint">Chrome will ask you to share your screen — pick <strong>Entire Screen</strong>, check <strong>"Share system audio"</strong>, then click Share.</p>
         <p class="spotify-track" id="spotifyTrack" style="display:none"></p>
         <div class="status" id="statusLine">
           <span id="statusDot" class="dot dot--idle"></span>
           <span id="statusText">Inactive</span>
+        </div>
+        <div class="sync-row">
+          <span id="bpmBadge" class="bpm-badge" style="display:none"></span>
+          <label class="sync-label" for="syncLeadSlider">Sync Lead</label>
+          <input id="syncLeadSlider" class="sync-slider" type="range"
+                 min="0" max="400" step="5" value="100"
+                 aria-label="Audio pipeline latency compensation in milliseconds">
+          <span id="syncLeadDisplay" class="sync-value">+100ms</span>
         </div>
       </div>
     </section>

@@ -6,6 +6,9 @@ enum HapticEventType: String, Codable, CaseIterable, Sendable {
     case rhythm_tap
     case alert_snap
     case sustained
+    /// Continuous audio texture — emitted every 50 ms by the dashboard.
+    /// Drives a long-running CHHapticAdvancedPatternPlayer via sendParameters().
+    case stream
 }
 
 struct HapticEvent: Codable, Equatable, Sendable {
@@ -16,6 +19,8 @@ struct HapticEvent: Codable, Equatable, Sendable {
     /// Milliseconds (per contract)
     let duration: Double
     let label: String
+    /// 0.0 (bass rumble) ... 1.0 (presence buzz). Only present on `stream` events.
+    let sharpness: Float?
 
     enum CodingKeys: String, CodingKey {
         case timestamp
@@ -23,6 +28,7 @@ struct HapticEvent: Codable, Equatable, Sendable {
         case intensity
         case duration
         case label
+        case sharpness
     }
 }
 
@@ -32,7 +38,8 @@ extension HapticEvent {
         event_type: .bass_hit,
         intensity: 1.0,
         duration: 150,
-        label: "Kick drum"
+        label: "Kick drum",
+        sharpness: nil
     )
 
     static let sampleRhythmTap = HapticEvent(
@@ -40,7 +47,8 @@ extension HapticEvent {
         event_type: .rhythm_tap,
         intensity: 1.0,
         duration: 80,
-        label: "Hi-hat pattern"
+        label: "Hi-hat pattern",
+        sharpness: nil
     )
 
     static let sampleAlertSnap = HapticEvent(
@@ -48,7 +56,8 @@ extension HapticEvent {
         event_type: .alert_snap,
         intensity: 1.0,
         duration: 50,
-        label: "Snare hit"
+        label: "Snare hit",
+        sharpness: nil
     )
 
     static let sampleSustained = HapticEvent(
@@ -56,7 +65,8 @@ extension HapticEvent {
         event_type: .sustained,
         intensity: 1.0,
         duration: 400,
-        label: "Bass note"
+        label: "Bass note",
+        sharpness: nil
     )
 
     static let allSamples: [HapticEvent] = [

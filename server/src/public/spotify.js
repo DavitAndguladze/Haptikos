@@ -10,8 +10,8 @@
 //   4. Open the dashboard at http://localhost:3000/ to authenticate.
 //      Phones still connect via the LAN IP shown in the QR code.
 //
-const SPOTIFY_CLIENT_ID = 'bb53a9fb6bda4aabbf47a886075bc5b1';
-const SPOTIFY_REDIRECT  = 'http://localhost:3000/';
+const SPOTIFY_CLIENT_ID = 'YOUR_SPOTIFY_CLIENT_ID';
+const SPOTIFY_REDIRECT  = 'http://localhost:3000/';  // must match exactly in Spotify Developer dashboard
 const SPOTIFY_SCOPE = 'user-read-playback-state';
 
 // ─── PKCE crypto helpers ───────────────────────────────────────────────────────

@@ -44,6 +44,7 @@ final class HapticSocketManager: ObservableObject {
 
         socket.on(clientEvent: .disconnect) { [weak self] _, _ in
             DispatchQueue.main.async { self?.isConnected = false }
+            HapticEngine.shared.stopStream()  // silence the continuous stream player
         }
 
         socket.on("ping-phone") { [weak socket] data, _ in
