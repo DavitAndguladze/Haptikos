@@ -12,29 +12,39 @@ const BANDS = [
 ];
 
 // ─── Radial visualizer constants ──────────────────────────────────────────────
-const NUM_SPOKES    = 180;  // evenly spaced around 360°
-const INNER_RADIUS  = 80;   // hollow centre, px
-const MAX_SPOKE_LEN = 150;  // maximum spoke length at full energy, px
-const SMOOTH_WIN    = 2;    // ±2 neighbours → moving-average window of 5
+const NUM_SPOKES     = 120;  // per ring — 5 rings × 120 spokes = 600 lines/frame
+const INNER_RADIUS   = 40;   // starting radius of the innermost ring, px (at 550 ref)
+const MIN_THICKNESS  = 3;    // minimum spoke length when a band is silent, px
+const MAX_THICKNESS  = 60;   // maximum spoke length at full energy, px
+const DOMINANT_BONUS = 1.4;  // dominant band gets 40% extra thickness
 
-// Pre-compute which FFT bin each spoke samples and what colour it gets.
-// Colour mapping matches the spec's three-zone scheme:
-//   sub-bass + bass → orange  |  mids → magenta  |  highs + presence → cyan
-const SPOKE_BINS   = new Uint16Array(NUM_SPOKES);
-const SPOKE_COLORS = new Array(NUM_SPOKES);
+// Ring config — color only. Base radii are computed dynamically each frame.
+const RING_CONFIG = [
+  { name: 'subBass',  color: '#1B1B8F', r: 27,  g: 27,  b: 143 }, // innermost — dark blue
+  { name: 'bass',     color: '#4DA6FF', r: 77,  g: 166, b: 255 }, // light blue
+  { name: 'mids',     color: '#FF3355', r: 255, g: 51,  b: 85  }, // red
+  { name: 'highs',    color: '#FF9F1C', r: 255, g: 159, b: 28  }, // orange
+  { name: 'presence', color: '#FFD600', r: 255, g: 214, b: 0   }, // outermost — yellow
+];
 
-for (let i = 0; i < NUM_SPOKES; i++) {
-  const bin        = Math.min(Math.round(i * 1024 / NUM_SPOKES), 1023);
-  SPOKE_BINS[i]    = bin;
-  SPOKE_COLORS[i]  = bin < 11  ? '#FF6B2B'   // sub-bass + bass  → orange
-                   : bin < 93  ? '#FF2D78'   // mids              → magenta
-                   :             '#00F0FF';  // highs + presence  → cyan
+// Animation time reference for wobble motion.
+const _startTime = performance.now();
+
+// Per-ring temporal smoothing state — allocated once to avoid GC pressure.
+const _ringPrev = {};
+for (const ring of RING_CONFIG) {
+  _ringPrev[ring.name] = new Float32Array(NUM_SPOKES);
 }
 
-// Per-frame scratch buffers — allocated once to avoid GC pressure at 60 fps.
-const _raw      = new Float32Array(NUM_SPOKES);
-const _smoothed = new Float32Array(NUM_SPOKES);
-const _innerLen = new Float32Array(NUM_SPOKES);
+// Scratch buffers for per-ring spoke computation (reused across rings each frame).
+const _spokeLengths  = new Float32Array(NUM_SPOKES);
+const _spokeSmoothed = new Float32Array(NUM_SPOKES);
+
+// Responsive scale factor — updated in setupCanvas(), read when drawing rings.
+let _scale = 1;
+
+// Previous frame layout for temporal smoothing of base radii and thicknesses.
+let _previousLayout = null;
 
 // ─── Band analyzer ────────────────────────────────────────────────────────────
 // JS port of server/src/analysis/frequency-bands.ts — must stay in sync.
@@ -193,13 +203,14 @@ const detector  = new EventDetector(); // singleton — reset() when stream stop
 // ─── Canvas setup ─────────────────────────────────────────────────────────────
 function setupCanvas() {
   const dpr  = window.devicePixelRatio || 1;
-  const size = Math.min(500, window.innerWidth - 60);
+  const size = Math.min(550, window.innerWidth - 60);
   // Set CSS size (layout dimensions) separately from pixel buffer size.
   canvas.style.width  = size + 'px';
   canvas.style.height = size + 'px';
   canvas.width  = Math.round(size * dpr);
   canvas.height = Math.round(size * dpr);
   ctx.scale(dpr, dpr);
+  _scale = size / 550; // scale all ring radii/lengths relative to the 550px reference
 }
 
 // CSS size in logical pixels — what we use for all coordinate math.
@@ -209,66 +220,125 @@ function cssSize() {
 
 // ─── Radial visualizer ────────────────────────────────────────────────────────
 
-function computeSpokes(fftData) {
-  // Map each spoke to a raw length from the corresponding FFT bin.
-  for (let i = 0; i < NUM_SPOKES; i++) {
-    _raw[i] = (fftData[SPOKE_BINS[i]] / 255) * MAX_SPOKE_LEN;
+// Compute dynamic ring layout: stacked with no gaps.
+// Each ring's base radius is where the previous ring's average spoke length ended.
+function computeRingLayout(bands, dominantName) {
+  const layout        = [];
+  let   currentRadius = INNER_RADIUS * _scale;
+  const minPx         = MIN_THICKNESS * _scale;
+  const maxPx         = MAX_THICKNESS * _scale;
+
+  for (const ring of RING_CONFIG) {
+    let energy = Math.pow(bands[ring.name] || 0, 0.5); // power curve
+
+    const isDominant = ring.name === dominantName && energy > 0.05;
+    if (isDominant) energy = Math.min(1.0, energy * DOMINANT_BONUS);
+
+    const avgThick = minPx + energy * (maxPx - minPx);
+
+    layout.push({
+      name:         ring.name,
+      color:        ring.color,
+      r:            ring.r,
+      g:            ring.g,
+      b:            ring.b,
+      baseRadius:   currentRadius,
+      avgThickness: avgThick,
+      energy:       energy,
+    });
+
+    currentRadius += avgThick; // next ring starts right here — no gap
   }
-  // Moving-average smoothing so the shape looks organic rather than jagged.
-  for (let i = 0; i < NUM_SPOKES; i++) {
-    let sum = 0;
-    for (let d = -SMOOTH_WIN; d <= SMOOTH_WIN; d++) {
-      sum += _raw[(i + d + NUM_SPOKES) % NUM_SPOKES];
-    }
-    _smoothed[i] = sum / (2 * SMOOTH_WIN + 1);
-  }
+
+  return layout;
 }
 
-/**
- * Draw one ring of spokes.
- * Batches consecutive same-colour spokes to minimise ctx state changes.
- */
-function drawRing(cx, cy, innerR, lengths, alpha, shadowBlur) {
+// Draw one ring using its computed layout (dynamic baseRadius + avgThickness).
+function drawRing(cx, cy, ringLayout, time) {
+  const { name, color, r, g, b, baseRadius, avgThickness, energy } = ringLayout;
+
+  const minPx        = MIN_THICKNESS * _scale;
+  const wobbleAmount = energy * avgThickness * 0.5;
+
+  // Build raw per-spoke lengths with organic wobble.
+  for (let i = 0; i < NUM_SPOKES; i++) {
+    let length = avgThickness;
+    length += Math.sin(i * 0.15 + time * 2.5)       * wobbleAmount * 0.50;
+    length += Math.sin(i * 0.40 + time * 4.0 + 1.5) * wobbleAmount * 0.35;
+    length += Math.sin(i * 0.90 + time * 6.0 + 3.0) * wobbleAmount * 0.25;
+    length += Math.sin(i * 1.70 + i * i * 0.01)     * wobbleAmount * 0.15; // per-spoke noise
+    _spokeLengths[i] = Math.max(minPx, Math.min(MAX_THICKNESS * _scale * 1.5, length));
+  }
+
+  // Spatial smoothing — ±2 neighbours, wrapping at seam.
+  for (let i = 0; i < NUM_SPOKES; i++) {
+    let sum = 0;
+    for (let d = -2; d <= 2; d++) sum += _spokeLengths[(i + d + NUM_SPOKES) % NUM_SPOKES];
+    _spokeSmoothed[i] = sum / 5;
+  }
+
+  // Temporal smoothing — 40% previous, 60% current.
+  const prev = _ringPrev[name];
+  for (let i = 0; i < NUM_SPOKES; i++) {
+    _spokeSmoothed[i] = prev[i] * 0.4 + _spokeSmoothed[i] * 0.6;
+    prev[i]           = _spokeSmoothed[i];
+  }
+
+  const brightness = 0.25 + energy * 0.75; // dim (0.25) when quiet → full (1.0) when loud
+
   ctx.save();
-  ctx.globalAlpha = alpha;
   ctx.lineWidth   = 2;
-  let lastColor   = null;
+  ctx.lineCap     = 'round';
+  ctx.strokeStyle = color;
+  ctx.shadowBlur  = energy > 0.1 ? 10 : 0;
+  ctx.shadowColor = `rgba(${r},${g},${b},0.5)`;
+  ctx.globalAlpha = brightness;
 
   for (let i = 0; i < NUM_SPOKES; i++) {
-    const color = SPOKE_COLORS[i];
-    if (color !== lastColor) {
-      ctx.shadowBlur  = shadowBlur;
-      ctx.shadowColor = color;
-      ctx.strokeStyle = color;
-      lastColor = color;
-    }
     const angle = (i / NUM_SPOKES) * Math.PI * 2 - Math.PI / 2;
-    const len   = lengths[i];
     const cos   = Math.cos(angle);
     const sin   = Math.sin(angle);
     ctx.beginPath();
-    ctx.moveTo(cx + innerR        * cos, cy + innerR        * sin);
-    ctx.lineTo(cx + (innerR + len) * cos, cy + (innerR + len) * sin);
+    ctx.moveTo(cx + baseRadius                       * cos, cy + baseRadius                       * sin);
+    ctx.lineTo(cx + (baseRadius + _spokeSmoothed[i]) * cos, cy + (baseRadius + _spokeSmoothed[i]) * sin);
     ctx.stroke();
   }
 
   ctx.restore();
 }
 
-function drawRadial(fftData) {
+// bands is passed in from drawFrame to avoid recomputing what the detector already has.
+function drawRadial(fftData, bands) {
   const size = cssSize();
   const cx   = size / 2;
   const cy   = size / 2;
 
   ctx.clearRect(0, 0, size, size);
-  computeSpokes(fftData);
 
-  // Outer ring — full opacity, full glow.
-  drawRing(cx, cy, INNER_RADIUS, _smoothed, 1.0, 15);
+  const time = (performance.now() - _startTime) / 1000;
 
-  // Inner ring — 60% scale, 50% opacity, softer glow. Creates depth.
-  for (let i = 0; i < NUM_SPOKES; i++) _innerLen[i] = _smoothed[i] * 0.6;
-  drawRing(cx, cy, INNER_RADIUS * 0.6, _innerLen, 0.5, 8);
+  // Find dominant band.
+  let dominantName   = 'subBass';
+  let dominantEnergy = 0;
+  for (const key of ['subBass', 'bass', 'mids', 'highs', 'presence']) {
+    if (bands[key] > dominantEnergy) { dominantEnergy = bands[key]; dominantName = key; }
+  }
+
+  // Compute dynamic stacked layout.
+  const layout = computeRingLayout(bands, dominantName);
+
+  // Smooth base radii and thicknesses so rings slide rather than jump.
+  if (_previousLayout) {
+    for (let i = 0; i < layout.length; i++) {
+      layout[i].baseRadius   = _previousLayout[i].baseRadius   * 0.5 + layout[i].baseRadius   * 0.5;
+      layout[i].avgThickness = _previousLayout[i].avgThickness * 0.4 + layout[i].avgThickness * 0.6;
+    }
+  }
+  _previousLayout = layout.map(ring => ({ ...ring }));
+
+  for (const ringLayout of layout) {
+    drawRing(cx, cy, ringLayout, time);
+  }
 }
 
 function drawIdle() {
@@ -278,21 +348,28 @@ function drawIdle() {
 
   ctx.clearRect(0, 0, size, size);
 
-  // Calm resting state: a perfect ring of short, dim spokes.
+  // All bands silent → all rings at MIN_THICKNESS, packed into a tight 15px cluster.
   ctx.save();
-  ctx.globalAlpha = 0.2;
   ctx.lineWidth   = 2;
+  ctx.lineCap     = 'round';
   ctx.shadowBlur  = 0;
+  ctx.globalAlpha = 0.25;
 
-  for (let i = 0; i < NUM_SPOKES; i++) {
-    const angle = (i / NUM_SPOKES) * Math.PI * 2 - Math.PI / 2;
-    const cos   = Math.cos(angle);
-    const sin   = Math.sin(angle);
-    ctx.strokeStyle = SPOKE_COLORS[i];
-    ctx.beginPath();
-    ctx.moveTo(cx + INNER_RADIUS        * cos, cy + INNER_RADIUS        * sin);
-    ctx.lineTo(cx + (INNER_RADIUS + 8)  * cos, cy + (INNER_RADIUS + 8)  * sin);
-    ctx.stroke();
+  let currentRadius = INNER_RADIUS * _scale;
+  const minPx       = MIN_THICKNESS * _scale;
+
+  for (const ring of RING_CONFIG) {
+    ctx.strokeStyle = ring.color;
+    for (let i = 0; i < NUM_SPOKES; i++) {
+      const angle = (i / NUM_SPOKES) * Math.PI * 2 - Math.PI / 2;
+      const cos   = Math.cos(angle);
+      const sin   = Math.sin(angle);
+      ctx.beginPath();
+      ctx.moveTo(cx + currentRadius         * cos, cy + currentRadius         * sin);
+      ctx.lineTo(cx + (currentRadius + minPx) * cos, cy + (currentRadius + minPx) * sin);
+      ctx.stroke();
+    }
+    currentRadius += minPx; // stack with no gap
   }
 
   ctx.restore();
@@ -310,7 +387,7 @@ function drawFrame() {
     console.debug('[IHear]', ev.event_type, ev.label, `intensity=${ev.intensity.toFixed(2)}`);
   }
 
-  drawRadial(dataArray);
+  drawRadial(dataArray, bands); // pass bands to avoid recomputing in drawRadial
   animationId = requestAnimationFrame(drawFrame);
 }
 
@@ -348,6 +425,7 @@ function stopListening() {
 
   isListening = false;
   detector.reset();
+  for (const ring of RINGS) _ringPrev[ring.name].fill(0); // clear temporal state
 
   startBtn.textContent   = 'Start Listening';
   startBtn.classList.remove('btn--active');

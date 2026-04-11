@@ -253,10 +253,10 @@ body {
   flex-shrink:   0;
 }
 
-.log-dot--bass_hit   { background: var(--orange); }
-.log-dot--rhythm_tap { background: var(--cyan); }
-.log-dot--alert_snap { background: var(--magenta); }
-.log-dot--sustained  { background: var(--yellow); }
+.log-dot--bass_hit   { background: #4DA6FF; } /* light blue  — bass */
+.log-dot--rhythm_tap { background: #FF3355; } /* red         — mids */
+.log-dot--alert_snap { background: #FF9F1C; } /* orange      — highs */
+.log-dot--sustained  { background: #1B1B8F; } /* dark blue   — sub-bass */
 
 .log-label {
   flex:      1;
