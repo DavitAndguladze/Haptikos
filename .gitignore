@@ -25,7 +25,7 @@ build/
 # CocoaPods
 Pods/
 
-# Claude
+# Claude (never commit agent instructions)
 .cursorrules
 claude.md
 CLAUDE.md

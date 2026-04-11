@@ -1,14 +1,14 @@
 'use strict';
 
 // ─── Band definitions ─────────────────────────────────────────────────────────
-// Bin math: 44.1 kHz, fftSize 2048 → 1024 usable bins, ~21.5 Hz/bin.
+// Bin math: 44.1 kHz, fftSize 512 → 256 usable bins, ~86.13 Hz/bin.
 // Must stay in sync with server/src/analysis/frequency-bands.ts.
 const BANDS = [
-  { name: 'Sub-bass', start: 0,   end: 3    },
-  { name: 'Bass',     start: 3,   end: 11   },
-  { name: 'Mids',     start: 11,  end: 93   },
-  { name: 'Highs',    start: 93,  end: 372  },
-  { name: 'Presence', start: 372, end: 1024 },
+  { name: 'Sub-bass', start: 0,  end: 1   },
+  { name: 'Bass',     start: 1,  end: 3   },
+  { name: 'Mids',     start: 3,  end: 24  },
+  { name: 'Highs',    start: 24, end: 93  },
+  { name: 'Presence', start: 93, end: 256 },
 ];
 
 // ─── Radial visualizer constants ──────────────────────────────────────────────
@@ -57,11 +57,11 @@ function analyzeBands(fftData) {
     return sum / (cap - start) / 255;
   }
   return {
-    subBass:  avg(0,   3),
-    bass:     avg(3,   11),
-    mids:     avg(11,  93),
-    highs:    avg(93,  372),
-    presence: avg(372, 1024),
+    subBass:  avg(0,  1),
+    bass:     avg(1,  3),
+    mids:     avg(3,  24),
+    highs:    avg(24, 93),
+    presence: avg(93, 256),
   };
 }
 
@@ -69,14 +69,15 @@ function analyzeBands(fftData) {
 // JS port of server/src/analysis/event-detector.ts — must stay in sync.
 // Datuna: tune thresholds in DETECTOR_CONFIG during integration.
 const DETECTOR_CONFIG = {
-  bassFluxThreshold:  0.15,
-  midsFluxThreshold:  0.12,
-  highsFluxThreshold: 0.18,
-  dynamicMultiplier:  2.0,
-  minEnergy:          0.08,
-  sustainedThreshold: 0.35,
+  bassFluxThreshold:  0.10,   // lower: fewer bins → larger per-frame jumps
+  midsFluxThreshold:  0.08,
+  highsFluxThreshold: 0.12,
+  dynamicMultiplier:  2.5,    // higher: compensates for noisier small-FFT readings
+  minEnergy:          0.05,   // lower: sub-bass is now a single bin
+  sustainedThreshold: 0.30,
   sustainedDuration:  200,   // ms
-  cooldowns: { bass_hit: 80, rhythm_tap: 60, alert_snap: 60, sustained: 200 },
+  // Slightly tighter than before — pairs with ~100 Hz analysis loop.
+  cooldowns: { bass_hit: 55, rhythm_tap: 42, alert_snap: 42, sustained: 160 },
 };
 
 class EventDetector {
@@ -102,8 +103,8 @@ class EventDetector {
       presence: Math.max(0, bands.presence - this._prev.presence),
     };
 
-    // Update per-band EMA (α = 0.97 ≈ 1 s window at 60 fps).
-    const α = 0.97;
+    // EMA time constant ~550 ms; α tuned for ~100 Hz detect() (was 0.97 at ~60 Hz).
+    const α = 0.982;
     for (const k of Object.keys(this._means)) {
       this._means[k] = α * this._means[k] + (1 - α) * bands[k];
     }
@@ -120,25 +121,25 @@ class EventDetector {
     // Rule 1 — bass_hit
     if (canFire('bass_hit')) {
       if (flux.subBass > dynT(cfg.bassFluxThreshold, this._means.subBass) && bands.subBass > cfg.minEnergy) {
-        fire('bass_hit', clamp(flux.subBass / 0.4, 0, 1), 150, 'Kick drum');
+        fire('bass_hit', clamp(flux.subBass / 0.55, 0, 1), 150, 'Kick drum');
       } else if (flux.bass > dynT(cfg.bassFluxThreshold, this._means.bass) && bands.bass > cfg.minEnergy) {
-        fire('bass_hit', clamp(flux.bass / 0.4, 0, 1), 150, 'Bass note');
+        fire('bass_hit', clamp(flux.bass / 0.55, 0, 1), 150, 'Bass note');
       }
     }
 
     // Rule 2 — rhythm_tap
     if (canFire('rhythm_tap')) {
       if (flux.mids > dynT(cfg.midsFluxThreshold, this._means.mids) && bands.mids > cfg.minEnergy) {
-        fire('rhythm_tap', clamp(flux.mids / 0.35, 0, 1), 80, 'Rhythm hit');
+        fire('rhythm_tap', clamp(flux.mids / 0.5, 0, 1), 80, 'Rhythm hit');
       }
     }
 
     // Rule 3 — alert_snap
     if (canFire('alert_snap')) {
       if (flux.highs > dynT(cfg.highsFluxThreshold, this._means.highs) && bands.highs > cfg.minEnergy) {
-        fire('alert_snap', clamp(flux.highs / 0.45, 0, 1), 50, 'Snare hit');
+        fire('alert_snap', clamp(flux.highs / 0.6, 0, 1), 50, 'Snare hit');
       } else if (flux.presence > dynT(cfg.highsFluxThreshold, this._means.presence) && bands.presence > cfg.minEnergy) {
-        fire('alert_snap', clamp(flux.presence / 0.45, 0, 1), 50, 'Cymbal snap');
+        fire('alert_snap', clamp(flux.presence / 0.6, 0, 1), 50, 'Cymbal snap');
       }
     }
 
@@ -293,7 +294,9 @@ let audioCtx          = null;
 let analyser          = null;
 let dataArray         = null;
 let animationId       = null;
-let analysisIntervalId = null;  // used when tab is in background
+/** Fixed-rate FFT + detector (~100 Hz). Decoupled from rAF so drawing vs analysis jitter don't stack. */
+let analysisIntervalId = null;
+const ANALYSIS_INTERVAL_MS = 10;
 let stream            = null;
 let isListening       = false;
 let _lastBands        = null;   // shared between analysis and draw loops
@@ -525,8 +528,8 @@ function runAnalysis() {
 }
 
 // ─── Draw loop (requestAnimationFrame — paused when tab is hidden) ────────────
+// Analysis runs on ANALYSIS_INTERVAL_MS whenever listening; this loop only paints.
 function drawFrame() {
-  runAnalysis();
   if (_lastBands) drawRadial(dataArray, _lastBands);
   animationId = requestAnimationFrame(drawFrame);
 }
@@ -565,11 +568,11 @@ async function startListening() {
 
     audioCtx = new AudioContext({ latencyHint: 'interactive', sampleRate: 44100 });
     analyser = audioCtx.createAnalyser();
-    analyser.fftSize               = 2048;
+    analyser.fftSize               = 512;
     analyser.smoothingTimeConstant = 0.0;
 
     audioCtx.createMediaStreamSource(stream).connect(analyser);
-    dataArray = new Uint8Array(analyser.frequencyBinCount); // 1024 elements
+    dataArray = new Uint8Array(analyser.frequencyBinCount); // 256 elements
 
     // If the user stops sharing via the browser's built-in "Stop sharing" button
     audioTracks[0].addEventListener('ended', () => { if (isListening) stopListening(); });

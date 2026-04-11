@@ -41,13 +41,13 @@ export interface DetectorConfig {
 }
 
 export const DEFAULT_CONFIG: DetectorConfig = {
-  bassFluxThreshold:  0.15,
-  midsFluxThreshold:  0.12,
-  highsFluxThreshold: 0.18,
-  dynamicMultiplier:  2.0,
-  minEnergy:          0.08,
-  sustainedThreshold: 0.35,
-  sustainedDuration:  200,  // ms
+  bassFluxThreshold:  0.10,   // lower: fewer bins → larger per-frame jumps
+  midsFluxThreshold:  0.08,
+  highsFluxThreshold: 0.12,
+  dynamicMultiplier:  2.5,    // higher: compensates for noisier small-FFT readings
+  minEnergy:          0.05,   // lower: sub-bass is now a single bin
+  sustainedThreshold: 0.30,
+  sustainedDuration:  200,    // ms
   cooldowns: {
     bass_hit:   150,
     rhythm_tap: 100,
@@ -159,9 +159,9 @@ export class EventDetector {
       const bassThresh = dynThresh(cfg.bassFluxThreshold, this.means.bass);
 
       if (flux.subBass > subThresh && bands.subBass > cfg.minEnergy) {
-        fire('bass_hit', clamp(flux.subBass / 0.4, 0, 1), 150, 'Kick drum');
+        fire('bass_hit', clamp(flux.subBass / 0.55, 0, 1), 150, 'Kick drum');
       } else if (flux.bass > bassThresh && bands.bass > cfg.minEnergy) {
-        fire('bass_hit', clamp(flux.bass / 0.4, 0, 1), 150, 'Bass note');
+        fire('bass_hit', clamp(flux.bass / 0.55, 0, 1), 150, 'Bass note');
       }
     }
 
@@ -170,7 +170,7 @@ export class EventDetector {
     if (canFire('rhythm_tap')) {
       const thresh = dynThresh(cfg.midsFluxThreshold, this.means.mids);
       if (flux.mids > thresh && bands.mids > cfg.minEnergy) {
-        fire('rhythm_tap', clamp(flux.mids / 0.35, 0, 1), 80, 'Rhythm hit');
+        fire('rhythm_tap', clamp(flux.mids / 0.5, 0, 1), 80, 'Rhythm hit');
       }
     }
 
@@ -181,9 +181,9 @@ export class EventDetector {
       const presenceThresh = dynThresh(cfg.highsFluxThreshold, this.means.presence);
 
       if (flux.highs > highsThresh && bands.highs > cfg.minEnergy) {
-        fire('alert_snap', clamp(flux.highs / 0.45, 0, 1), 50, 'Snare hit');
+        fire('alert_snap', clamp(flux.highs / 0.6, 0, 1), 50, 'Snare hit');
       } else if (flux.presence > presenceThresh && bands.presence > cfg.minEnergy) {
-        fire('alert_snap', clamp(flux.presence / 0.45, 0, 1), 50, 'Cymbal snap');
+        fire('alert_snap', clamp(flux.presence / 0.6, 0, 1), 50, 'Cymbal snap');
       }
     }
 

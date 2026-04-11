@@ -1,8 +1,8 @@
 // Frequency band splitter for WebAudio FFT data.
 //
-// Bin math: at 44.1 kHz sample rate with fftSize 2048,
-// the analyser produces 1024 usable bins, each covering
-// 44100 / 2048 ≈ 21.5 Hz.
+// Bin math: at 44.1 kHz sample rate with fftSize 512,
+// the analyser produces 256 usable bins, each covering
+// 44100 / 512 ≈ 86.13 Hz.
 //
 // These boundaries match the plan and are intentionally tunable —
 // Datuna (audio engineer) may adjust them during integration tuning.
@@ -14,25 +14,25 @@ import type { HapticEvent } from '../types.js'; // eslint-disable-line @typescri
 // HapticEvent imported for reference only; event-detector.ts produces those.
 
 export interface BandEnergies {
-  /** 20 – 80 Hz  (bins  0 – 2): kick drums, sub-bass drops */
+  /** 0 – 86 Hz   (bin 0): kick drums, sub-bass drops */
   subBass: number;
-  /** 80 – 250 Hz (bins  3 – 10): bass guitar, low synths */
+  /** 86 – 258 Hz  (bins 1 – 2): bass guitar, low synths */
   bass: number;
-  /** 250 – 2 000 Hz (bins 11 – 92): vocals, guitars, rhythmic hits */
+  /** 258 – 2 066 Hz (bins 3 – 23): vocals, guitars, rhythmic hits */
   mids: number;
-  /** 2 000 – 8 000 Hz (bins 93 – 371): hi-hats, cymbals, snares */
+  /** 2 066 – 8 009 Hz (bins 24 – 92): hi-hats, cymbals, snares */
   highs: number;
-  /** 8 000+ Hz (bins 372 – 1023): sibilance, air, transients */
+  /** 8 009+ Hz (bins 93 – 255): sibilance, air, transients */
   presence: number;
 }
 
 // Inclusive start, exclusive end — same convention as Array.slice.
 const BAND_BINS = {
-  subBass:  { start: 0,   end: 3    },
-  bass:     { start: 3,   end: 11   },
-  mids:     { start: 11,  end: 93   },
-  highs:    { start: 93,  end: 372  },
-  presence: { start: 372, end: 1024 },
+  subBass:  { start: 0,  end: 1   },
+  bass:     { start: 1,  end: 3   },
+  mids:     { start: 3,  end: 24  },
+  highs:    { start: 24, end: 93  },
+  presence: { start: 93, end: 256 },
 } as const;
 
 /**
