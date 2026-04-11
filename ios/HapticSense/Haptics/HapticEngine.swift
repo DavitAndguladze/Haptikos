@@ -7,7 +7,7 @@ final class HapticEngine {
 
     private var engine: CHHapticEngine?
     private let stateLock = NSLock()
-    private let restartDelay: TimeInterval = 0.5
+    private let restartDelay: TimeInterval = 0.1
 
     private(set) var supportsHaptics: Bool = false
 
@@ -63,6 +63,14 @@ final class HapticEngine {
             self?.stateLock.unlock()
             self?.startEngineIfNeeded()
         }
+    }
+
+    /// Call on socket connect to ensure the engine is running before the first beat arrives.
+    func warmUp() {
+        stateLock.lock()
+        let alreadyRunning = engine != nil
+        stateLock.unlock()
+        if !alreadyRunning { startEngineIfNeeded() }
     }
 
     func playEvent(_ event: HapticEvent) {

@@ -39,6 +39,7 @@ final class HapticSocketManager: ObservableObject {
         socket.on(clientEvent: .connect) { [weak self] _, _ in
             DispatchQueue.main.async { self?.isConnected = true }
             socket.emit("register-phone", ["role": "phone"])
+            HapticEngine.shared.warmUp()  // ensure engine is running before first beat
         }
 
         socket.on(clientEvent: .disconnect) { [weak self] _, _ in

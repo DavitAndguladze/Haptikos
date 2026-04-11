@@ -429,10 +429,10 @@ async function startListening() {
       return;
     }
 
-    audioCtx = new AudioContext();
+    audioCtx = new AudioContext({ latencyHint: 'interactive', sampleRate: 44100 });
     analyser = audioCtx.createAnalyser();
     analyser.fftSize               = 2048;
-    analyser.smoothingTimeConstant = 0.3;
+    analyser.smoothingTimeConstant = 0.0;
 
     audioCtx.createMediaStreamSource(stream).connect(analyser);
     dataArray = new Uint8Array(analyser.frequencyBinCount); // 1024 elements
