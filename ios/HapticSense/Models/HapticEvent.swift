@@ -30,7 +30,7 @@ extension HapticEvent {
     static let sampleBassHit = HapticEvent(
         timestamp: 1_712_764_800_000,
         event_type: .bass_hit,
-        intensity: 0.85,
+        intensity: 1.0,
         duration: 150,
         label: "Kick drum"
     )
@@ -38,7 +38,7 @@ extension HapticEvent {
     static let sampleRhythmTap = HapticEvent(
         timestamp: 1_712_764_800_050,
         event_type: .rhythm_tap,
-        intensity: 0.60,
+        intensity: 1.0,
         duration: 80,
         label: "Hi-hat pattern"
     )
@@ -46,7 +46,7 @@ extension HapticEvent {
     static let sampleAlertSnap = HapticEvent(
         timestamp: 1_712_764_800_120,
         event_type: .alert_snap,
-        intensity: 0.95,
+        intensity: 1.0,
         duration: 50,
         label: "Snare hit"
     )
@@ -54,7 +54,7 @@ extension HapticEvent {
     static let sampleSustained = HapticEvent(
         timestamp: 1_712_764_800_200,
         event_type: .sustained,
-        intensity: 0.70,
+        intensity: 1.0,
         duration: 400,
         label: "Bass note"
     )

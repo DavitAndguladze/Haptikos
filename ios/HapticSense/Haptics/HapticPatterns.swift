@@ -17,7 +17,7 @@ enum HapticPatterns {
     /// Deep rumble — continuous, low sharpness.
     static func bassHit(intensity: Float, durationMs: Double) throws -> CHHapticPattern {
         let i = clamp01(intensity)
-        let sharpness: Float = 0.2
+        let sharpness: Float = 0.3
         let dur = seconds(fromMilliseconds: durationMs)
         let event = CHHapticEvent(
             eventType: .hapticContinuous,
@@ -34,7 +34,7 @@ enum HapticPatterns {
     /// Crisp tap — transient, medium sharpness.
     static func rhythmTap(intensity: Float) throws -> CHHapticPattern {
         let i = clamp01(intensity)
-        let sharpness: Float = 0.5
+        let sharpness: Float = 0.6
         let event = CHHapticEvent(
             eventType: .hapticTransient,
             parameters: [
@@ -64,7 +64,7 @@ enum HapticPatterns {
     /// Slow pulse — continuous with intensity fade over `durationMs`.
     static func sustained(intensity: Float, durationMs: Double) throws -> CHHapticPattern {
         let i = clamp01(intensity)
-        let sharpness: Float = 0.35
+        let sharpness: Float = 0.4
         let dur = seconds(fromMilliseconds: durationMs)
 
         let intensityCurve = CHHapticParameterCurve(
