@@ -20,6 +20,140 @@ for (const band of BANDS) {
   }
 }
 
+// ─── Band analyzer (JS port of frequency-bands.ts) ───────────────────────────
+// Must stay in sync with server/src/analysis/frequency-bands.ts.
+function analyzeBands(fftData) {
+  function avg(start, end) {
+    const actualEnd = Math.min(end, fftData.length);
+    if (actualEnd <= start) return 0;
+    let sum = 0;
+    for (let i = start; i < actualEnd; i++) sum += fftData[i];
+    return sum / (actualEnd - start) / 255;
+  }
+  return {
+    subBass:  avg(0,   3),
+    bass:     avg(3,   11),
+    mids:     avg(11,  93),
+    highs:    avg(93,  372),
+    presence: avg(372, 1024),
+  };
+}
+
+// ─── EventDetector (JS port of event-detector.ts) ────────────────────────────
+// Must stay in sync with server/src/analysis/event-detector.ts.
+// Tunable thresholds — Datuna: adjust these during integration.
+const DETECTOR_CONFIG = {
+  bassFluxThreshold:  0.15,
+  midsFluxThreshold:  0.12,
+  highsFluxThreshold: 0.18,
+  dynamicMultiplier:  2.0,
+  minEnergy:          0.08,
+  sustainedThreshold: 0.35,
+  sustainedDuration:  200,  // ms
+  cooldowns: { bass_hit: 150, rhythm_tap: 100, alert_snap: 100, sustained: 300 },
+};
+
+class EventDetector {
+  constructor() {
+    this._cfg           = DETECTOR_CONFIG;
+    this._prev          = { subBass: 0, bass: 0, mids: 0, highs: 0, presence: 0 };
+    this._means         = { subBass: 0, bass: 0, mids: 0, highs: 0, presence: 0 };
+    this._lastFired     = { bass_hit: 0, rhythm_tap: 0, alert_snap: 0, sustained: 0 };
+    this._sustainedSince = {};
+  }
+
+  detect(bands) {
+    const now    = Date.now();
+    const events = [];
+    const cfg    = this._cfg;
+
+    // Positive spectral flux — only rising edges matter.
+    const flux = {
+      subBass:  Math.max(0, bands.subBass  - this._prev.subBass),
+      bass:     Math.max(0, bands.bass     - this._prev.bass),
+      mids:     Math.max(0, bands.mids     - this._prev.mids),
+      highs:    Math.max(0, bands.highs    - this._prev.highs),
+      presence: Math.max(0, bands.presence - this._prev.presence),
+    };
+
+    // Update per-band EMA (α = 0.97 ≈ 1 s window at 60 fps).
+    const α = 0.97;
+    for (const k of Object.keys(this._means)) {
+      this._means[k] = α * this._means[k] + (1 - α) * bands[k];
+    }
+
+    const canFire = (type) => now - this._lastFired[type] >= cfg.cooldowns[type];
+    const clamp   = (v, lo, hi) => v < lo ? lo : v > hi ? hi : v;
+    const dynT    = (base, mean) => Math.max(base, mean * cfg.dynamicMultiplier);
+
+    const fire = (type, intensity, duration, label) => {
+      this._lastFired[type] = now;
+      events.push({ timestamp: now, event_type: type, intensity: clamp(intensity, 0, 1), duration, label });
+    };
+
+    // Rule 1 — bass_hit
+    if (canFire('bass_hit')) {
+      if (flux.subBass > dynT(cfg.bassFluxThreshold, this._means.subBass) && bands.subBass > cfg.minEnergy) {
+        fire('bass_hit', clamp(flux.subBass / 0.4, 0, 1), 150, 'Kick drum');
+      } else if (flux.bass > dynT(cfg.bassFluxThreshold, this._means.bass) && bands.bass > cfg.minEnergy) {
+        fire('bass_hit', clamp(flux.bass / 0.4, 0, 1), 150, 'Bass note');
+      }
+    }
+
+    // Rule 2 — rhythm_tap
+    if (canFire('rhythm_tap')) {
+      if (flux.mids > dynT(cfg.midsFluxThreshold, this._means.mids) && bands.mids > cfg.minEnergy) {
+        fire('rhythm_tap', clamp(flux.mids / 0.35, 0, 1), 80, 'Rhythm hit');
+      }
+    }
+
+    // Rule 3 — alert_snap
+    if (canFire('alert_snap')) {
+      if (flux.highs > dynT(cfg.highsFluxThreshold, this._means.highs) && bands.highs > cfg.minEnergy) {
+        fire('alert_snap', clamp(flux.highs / 0.45, 0, 1), 50, 'Snare hit');
+      } else if (flux.presence > dynT(cfg.highsFluxThreshold, this._means.presence) && bands.presence > cfg.minEnergy) {
+        fire('alert_snap', clamp(flux.presence / 0.45, 0, 1), 50, 'Cymbal snap');
+      }
+    }
+
+    // Rule 4 — sustained (band held above threshold for >sustainedDuration ms)
+    if (canFire('sustained')) {
+      const sustainedBands = [
+        ['subBass',  'Deep sustain'],
+        ['bass',     'Bass note'],
+        ['mids',     'Sustained tone'],
+        ['highs',    'High sustain'],
+        ['presence', 'Airy sustain'],
+      ];
+      for (const [band, label] of sustainedBands) {
+        if (bands[band] > cfg.sustainedThreshold) {
+          if (this._sustainedSince[band] === undefined) {
+            this._sustainedSince[band] = now;
+          } else if (now - this._sustainedSince[band] >= cfg.sustainedDuration) {
+            fire('sustained', clamp(bands[band] * 1.1, 0, 1), 400, label);
+            delete this._sustainedSince[band];
+            break;
+          }
+        } else {
+          delete this._sustainedSince[band];
+        }
+      }
+    } else {
+      this._sustainedSince = {};
+    }
+
+    this._prev = { ...bands };
+    return events;
+  }
+
+  reset() {
+    this._prev           = { subBass: 0, bass: 0, mids: 0, highs: 0, presence: 0 };
+    this._means          = { subBass: 0, bass: 0, mids: 0, highs: 0, presence: 0 };
+    this._sustainedSince = {};
+    this._lastFired      = { bass_hit: 0, rhythm_tap: 0, alert_snap: 0, sustained: 0 };
+  }
+}
+
 // ─── DOM refs ────────────────────────────────────────────────────────────────
 const canvas      = document.getElementById('visualizer');
 const ctx         = canvas.getContext('2d');
@@ -37,6 +171,8 @@ let dataArray     = null;  // Uint8Array — reused every frame to avoid GC pres
 let animationId   = null;
 let stream        = null;
 let isListening   = false;
+
+const detector = new EventDetector(); // singleton — reset() on stream stop
 
 // ─── Canvas helpers ───────────────────────────────────────────────────────────
 function resizeCanvas() {
@@ -65,6 +201,14 @@ function drawIdle() {
 // ─── Main render loop ─────────────────────────────────────────────────────────
 function drawBars() {
   analyser.getByteFrequencyData(dataArray);
+
+  // Run event detection before drawing so the log updates in the same frame.
+  const bands  = analyzeBands(dataArray);
+  const events = detector.detect(bands);
+  for (const ev of events) {
+    addEvent(ev);
+    console.debug('[IHear]', ev.event_type, ev.label, `intensity=${ev.intensity.toFixed(2)}`);
+  }
 
   const w = canvas.getBoundingClientRect().width;
   const h = canvas.getBoundingClientRect().height;
@@ -145,6 +289,7 @@ function stopListening() {
   }
 
   isListening = false;
+  detector.reset(); // clear EMA / cooldown state so next session starts clean
   startBtn.textContent   = 'Start Listening';
   startBtn.classList.remove('btn--active');
   statusDot.className    = 'dot dot--idle';
