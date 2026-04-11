@@ -191,12 +191,14 @@ const eventLog    = document.getElementById('eventLog');
 const phonesCount = document.getElementById('phonesCount');
 
 // ─── Audio state ──────────────────────────────────────────────────────────────
-let audioCtx    = null;
-let analyser    = null;
-let dataArray   = null;
-let animationId = null;
-let stream      = null;
-let isListening = false;
+let audioCtx          = null;
+let analyser          = null;
+let dataArray         = null;
+let animationId       = null;
+let analysisIntervalId = null;  // used when tab is in background
+let stream            = null;
+let isListening       = false;
+let _lastBands        = null;   // shared between analysis and draw loops
 
 const detector  = new EventDetector(); // singleton — reset() when stream stops
 
@@ -290,8 +292,6 @@ function drawRing(cx, cy, ringLayout, time) {
   ctx.lineWidth   = 2;
   ctx.lineCap     = 'round';
   ctx.strokeStyle = color;
-  ctx.shadowBlur  = energy > 0.1 ? 10 : 0;
-  ctx.shadowColor = `rgba(${r},${g},${b},0.5)`;
   ctx.globalAlpha = brightness;
 
   for (let i = 0; i < NUM_SPOKES; i++) {
@@ -375,22 +375,40 @@ function drawIdle() {
   ctx.restore();
 }
 
-// ─── Main render loop ─────────────────────────────────────────────────────────
-function drawFrame() {
+// ─── Analysis loop (runs always, even in background) ─────────────────────────
+// Separated from the draw loop so Chrome's background-tab throttling of
+// requestAnimationFrame doesn't stop haptic emission.
+function runAnalysis() {
+  if (!analyser) return;
   analyser.getByteFrequencyData(dataArray);
-
-  // Detection runs in the same frame so the event log updates immediately.
-  const bands  = analyzeBands(dataArray);
-  const events = detector.detect(bands);
+  _lastBands = analyzeBands(dataArray);
+  const events = detector.detect(_lastBands);
   for (const ev of events) {
     addEvent(ev);
     emitHaptic(ev);
     console.debug('[IHear]', ev.event_type, ev.label, `intensity=${ev.intensity.toFixed(2)}`);
   }
+}
 
-  drawRadial(dataArray, bands); // pass bands to avoid recomputing in drawRadial
+// ─── Draw loop (requestAnimationFrame — paused when tab is hidden) ────────────
+function drawFrame() {
+  runAnalysis();
+  if (_lastBands) drawRadial(dataArray, _lastBands);
   animationId = requestAnimationFrame(drawFrame);
 }
+
+// Switch between rAF (visible) and setInterval (background) so analysis
+// keeps running even when the user switches to Spotify or another tab.
+document.addEventListener('visibilitychange', () => {
+  if (!isListening) return;
+  if (document.hidden) {
+    if (animationId) { cancelAnimationFrame(animationId); animationId = null; }
+    if (!analysisIntervalId) analysisIntervalId = setInterval(runAnalysis, 20);
+  } else {
+    if (analysisIntervalId) { clearInterval(analysisIntervalId); analysisIntervalId = null; }
+    if (!animationId) animationId = requestAnimationFrame(drawFrame);
+  }
+});
 
 // ─── Audio capture ────────────────────────────────────────────────────────────
 async function startListening() {
@@ -438,9 +456,11 @@ async function startListening() {
 }
 
 function stopListening() {
-  if (animationId) { cancelAnimationFrame(animationId); animationId = null; }
-  if (stream)      { stream.getTracks().forEach(t => t.stop()); stream = null; }
-  if (audioCtx)    { audioCtx.close(); audioCtx = null; analyser = null; dataArray = null; }
+  if (animationId)        { cancelAnimationFrame(animationId); animationId = null; }
+  if (analysisIntervalId) { clearInterval(analysisIntervalId); analysisIntervalId = null; }
+  if (stream)             { stream.getTracks().forEach(t => t.stop()); stream = null; }
+  if (audioCtx)           { audioCtx.close(); audioCtx = null; analyser = null; dataArray = null; }
+  _lastBands = null;
 
   isListening = false;
   detector.reset();

@@ -14,10 +14,10 @@ enum HapticPatterns {
 
     // MARK: - Public factories
 
-    /// Deep rumble — continuous, low sharpness.
+    /// Deep rumble — continuous. Sharpness scales with intensity (0.1 quiet → 0.4 loud).
     static func bassHit(intensity: Float, durationMs: Double) throws -> CHHapticPattern {
-        let i = clamp01(intensity)
-        let sharpness: Float = 0.3
+        let i = clamp01(max(intensity, 0.25))          // floor so quiet beats still register
+        let sharpness = clamp01(0.1 + i * 0.3)        // 0.1 (soft) → 0.4 (loud)
         let dur = seconds(fromMilliseconds: durationMs)
         let event = CHHapticEvent(
             eventType: .hapticContinuous,
@@ -31,10 +31,10 @@ enum HapticPatterns {
         return try CHHapticPattern(events: [event], parameters: [])
     }
 
-    /// Crisp tap — transient, medium sharpness.
+    /// Crisp tap — transient. Sharpness scales with intensity (0.4 quiet → 0.8 loud).
     static func rhythmTap(intensity: Float) throws -> CHHapticPattern {
-        let i = clamp01(intensity)
-        let sharpness: Float = 0.6
+        let i = clamp01(max(intensity, 0.25))
+        let sharpness = clamp01(0.4 + i * 0.4)        // 0.4 (soft) → 0.8 (loud)
         let event = CHHapticEvent(
             eventType: .hapticTransient,
             parameters: [
@@ -46,10 +46,10 @@ enum HapticPatterns {
         return try CHHapticPattern(events: [event], parameters: [])
     }
 
-    /// Sharp snap — transient, max sharpness.
+    /// Sharp snap — transient. Sharpness scales with intensity (0.7 quiet → 1.0 loud).
     static func alertSnap(intensity: Float) throws -> CHHapticPattern {
-        let i = clamp01(intensity)
-        let sharpness: Float = 1.0
+        let i = clamp01(max(intensity, 0.25))
+        let sharpness = clamp01(0.7 + i * 0.3)        // 0.7 (soft) → 1.0 (loud)
         let event = CHHapticEvent(
             eventType: .hapticTransient,
             parameters: [
@@ -62,9 +62,10 @@ enum HapticPatterns {
     }
 
     /// Slow pulse — continuous with intensity fade over `durationMs`.
+    /// Sharpness scales with intensity (0.2 quiet → 0.5 loud).
     static func sustained(intensity: Float, durationMs: Double) throws -> CHHapticPattern {
-        let i = clamp01(intensity)
-        let sharpness: Float = 0.4
+        let i = clamp01(max(intensity, 0.25))
+        let sharpness = clamp01(0.2 + i * 0.3)        // 0.2 (soft) → 0.5 (loud)
         let dur = seconds(fromMilliseconds: durationMs)
 
         let intensityCurve = CHHapticParameterCurve(

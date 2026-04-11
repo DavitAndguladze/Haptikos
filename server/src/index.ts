@@ -2,9 +2,10 @@ import express from 'express';
 import { createServer } from 'http';
 import { fileURLToPath } from 'url';
 import path from 'path';
+import QRCode from 'qrcode';
 import {
   createSocketManager,
-  generateQrDataUrl,
+  getLocalIp,
   getRoomCounts,
 } from './broadcast/socket-manager.js';
 
@@ -19,8 +20,10 @@ const io = createSocketManager(httpServer);
 app.use(express.static(path.join(__dirname, '../src/public')));
 
 app.get('/qr', async (_req, res) => {
-  const dataUrl = await generateQrDataUrl(PORT);
-  res.send(`<img src="${dataUrl}" alt="Scan to connect" />`);
+  const url = `http://${getLocalIp()}:${PORT}`;
+  const buf = await QRCode.toBuffer(url);
+  res.set('Content-Type', 'image/png');
+  res.send(buf);
 });
 
 app.get('/health', (_req, res) => {
