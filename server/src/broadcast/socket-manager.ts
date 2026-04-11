@@ -15,11 +15,17 @@ export function createSocketManager(httpServer: ReturnType<typeof createServer>)
     cors: { origin: '*' },
   });
 
+  const broadcastPhoneCount = () => {
+    const count = io.sockets.adapter.rooms.get('phones')?.size ?? 0;
+    io.to('dashboard').emit('phone-count', count);
+  };
+
   io.on('connection', (socket) => {
     const role = socket.handshake.query['role'];
 
     if (role === 'phone') {
       socket.join('phones');
+      broadcastPhoneCount();
     } else {
       socket.join('dashboard');
     }
@@ -28,7 +34,9 @@ export function createSocketManager(httpServer: ReturnType<typeof createServer>)
       io.to('phones').emit('haptic', event);
     });
 
-    socket.on('disconnect', () => {});
+    socket.on('disconnect', () => {
+      broadcastPhoneCount();
+    });
   });
 
   return io;

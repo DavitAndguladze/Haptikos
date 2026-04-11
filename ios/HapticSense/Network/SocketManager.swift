@@ -51,10 +51,10 @@ final class HapticSocketManager: ObservableObject {
                   let event = try? JSONDecoder().decode(HapticEvent.self, from: jsonData)
             else { return }
 
-            DispatchQueue.main.async {
-                self?.lastEvent = event
-            }
+            // Fire haptic immediately on the socket callback thread — no main-thread wait.
             HapticEngine.shared.playEvent(event)
+            // Update published state on main thread for SwiftUI.
+            DispatchQueue.main.async { self?.lastEvent = event }
         }
 
         socket.connect()

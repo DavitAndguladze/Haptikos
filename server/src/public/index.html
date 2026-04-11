@@ -19,6 +19,7 @@
 
       <div class="controls">
         <button id="startBtn">Start Listening</button>
+        <p class="audio-hint">Chrome will ask you to share your screen — pick <strong>Entire Screen</strong>, check <strong>"Share system audio"</strong>, then click Share.</p>
         <div class="status" id="statusLine">
           <span id="statusDot" class="dot dot--idle"></span>
           <span id="statusText">Microphone Inactive</span>
@@ -62,6 +63,7 @@
 
   </div>
 
+  <script src="/socket.io/socket.io.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

@@ -76,7 +76,7 @@ const DETECTOR_CONFIG = {
   minEnergy:          0.08,
   sustainedThreshold: 0.35,
   sustainedDuration:  200,   // ms
-  cooldowns: { bass_hit: 150, rhythm_tap: 100, alert_snap: 100, sustained: 300 },
+  cooldowns: { bass_hit: 80, rhythm_tap: 60, alert_snap: 60, sustained: 200 },
 };
 
 class EventDetector {
@@ -384,6 +384,7 @@ function drawFrame() {
   const events = detector.detect(bands);
   for (const ev of events) {
     addEvent(ev);
+    emitHaptic(ev);
     console.debug('[IHear]', ev.event_type, ev.label, `intensity=${ev.intensity.toFixed(2)}`);
   }
 
@@ -391,30 +392,48 @@ function drawFrame() {
   animationId = requestAnimationFrame(drawFrame);
 }
 
-// ─── Microphone control ───────────────────────────────────────────────────────
+// ─── Audio capture ────────────────────────────────────────────────────────────
 async function startListening() {
   try {
-    stream   = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+    // Capture system audio via screen share so we hear the music playing on
+    // the laptop rather than the built-in microphone.
+    // Chrome requires video:true for getDisplayMedia to work; we stop the
+    // video tracks immediately — only the audio track is used.
+    stream = await navigator.mediaDevices.getDisplayMedia({ audio: true, video: true });
+    stream.getVideoTracks().forEach(t => t.stop());
+
+    const audioTracks = stream.getAudioTracks();
+    if (audioTracks.length === 0) {
+      stream.getTracks().forEach(t => t.stop());
+      stream = null;
+      statusDot.className    = 'dot dot--error';
+      statusText.textContent = 'No audio track — check "Share system audio" in the picker';
+      return;
+    }
+
     audioCtx = new AudioContext();
     analyser = audioCtx.createAnalyser();
     analyser.fftSize               = 2048;
-    analyser.smoothingTimeConstant = 0.8;
+    analyser.smoothingTimeConstant = 0.3;
 
     audioCtx.createMediaStreamSource(stream).connect(analyser);
     dataArray = new Uint8Array(analyser.frequencyBinCount); // 1024 elements
 
+    // If the user stops sharing via the browser's built-in "Stop sharing" button
+    audioTracks[0].addEventListener('ended', () => { if (isListening) stopListening(); });
+
     isListening = true;
-    startBtn.textContent = 'Stop Listening';
+    startBtn.textContent   = 'Stop Listening';
     startBtn.classList.add('btn--active');
-    statusDot.className  = 'dot dot--active';
-    statusText.textContent = 'Microphone Active';
+    statusDot.className    = 'dot dot--active';
+    statusText.textContent = 'System Audio Active';
     statusLine.classList.add('status--active');
 
     animationId = requestAnimationFrame(drawFrame);
   } catch (err) {
-    console.error('[IHear] Microphone error:', err);
+    console.error('[IHear] Audio capture error:', err);
     statusDot.className    = 'dot dot--error';
-    statusText.textContent = `Mic error: ${err.message}`;
+    statusText.textContent = `Error: ${err.message}`;
   }
 }
 
@@ -425,7 +444,7 @@ function stopListening() {
 
   isListening = false;
   detector.reset();
-  for (const ring of RINGS) _ringPrev[ring.name].fill(0); // clear temporal state
+  for (const ring of RING_CONFIG) _ringPrev[ring.name].fill(0); // clear temporal state
 
   startBtn.textContent   = 'Start Listening';
   startBtn.classList.remove('btn--active');
@@ -481,6 +500,30 @@ window.IHear = {
     phonesCount.classList.toggle('has-phones', n > 0);
   },
 };
+
+// ─── Socket.IO ────────────────────────────────────────────────────────────────
+const socket = io({ transports: ['websocket'], query: { role: 'dashboard' } });
+
+socket.on('connect', () => {
+  console.log('[IHear] Socket connected');
+});
+
+socket.on('disconnect', () => {
+  console.log('[IHear] Socket disconnected');
+});
+
+// Update phone count badge whenever the server broadcasts it.
+socket.on('phone-count', (n) => {
+  window.IHear.setPhoneCount(n);
+});
+
+/**
+ * Emit a detected haptic event to the server so it relays to all phones.
+ * Called from the drawFrame loop.
+ */
+function emitHaptic(event) {
+  if (socket.connected) socket.emit('haptic', event);
+}
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 setupCanvas();

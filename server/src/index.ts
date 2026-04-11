@@ -15,7 +15,8 @@ const app = express();
 const httpServer = createServer(app);
 const io = createSocketManager(httpServer);
 
-app.use(express.static(path.join(__dirname, 'public')));
+// When compiled to dist/, __dirname = .../server/dist — public lives in src/public.
+app.use(express.static(path.join(__dirname, '../src/public')));
 
 app.get('/qr', async (_req, res) => {
   const dataUrl = await generateQrDataUrl(PORT);

@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "tsx src/index.ts",
+    "dev": "tsc && node dist/index.js",
     "build": "tsc",
     "start": "node dist/index.js"
   },
@@ -13,6 +13,8 @@
   "license": "ISC",
   "type": "module",
   "dependencies": {
+    "call-bind-apply-helpers": "^1.0.2",
+    "dunder-proto": "^1.0.1",
     "express": "^5.2.1",
     "qrcode": "^1.5.4",
     "socket.io": "^4.8.3"
