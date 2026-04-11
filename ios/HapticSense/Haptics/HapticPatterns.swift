@@ -68,9 +68,9 @@ enum HapticPatterns {
         let dur = seconds(fromMilliseconds: durationMs)
 
         let intensityCurve = CHHapticParameterCurve(
-            parameterID: .hapticIntensity,
+            parameterID: .hapticIntensityControl,
             controlPoints: [
-                CHHapticParameterCurve.ControlPoint(relativeTime: 0, value: Double(i)),
+                CHHapticParameterCurve.ControlPoint(relativeTime: 0, value: i),
                 CHHapticParameterCurve.ControlPoint(relativeTime: dur, value: 0),
             ],
             relativeTime: 0
