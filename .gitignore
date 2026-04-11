@@ -6,6 +6,7 @@ dist/
 !README.md
 
 PLAN.md
+plan.md
 # macOS
 .DS_Store
 
@@ -25,8 +26,6 @@ build/
 Pods/
 
 # Claude
-PLAN.md
-plan.md
 .cursorrules
 claude.md
 CLAUDE.md

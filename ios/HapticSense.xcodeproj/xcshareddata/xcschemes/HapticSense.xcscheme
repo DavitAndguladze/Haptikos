@@ -14,7 +14,7 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "NT1"
+               BlueprintIdentifier = "2C0D76BC57B13003A1F63FA8"
                BuildableName = "HapticSense.app"
                BlueprintName = "HapticSense"
                ReferencedContainer = "container:HapticSense.xcodeproj">
@@ -43,7 +43,7 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "NT1"
+            BlueprintIdentifier = "2C0D76BC57B13003A1F63FA8"
             BuildableName = "HapticSense.app"
             BlueprintName = "HapticSense"
             ReferencedContainer = "container:HapticSense.xcodeproj">
@@ -60,7 +60,7 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "NT1"
+            BlueprintIdentifier = "2C0D76BC57B13003A1F63FA8"
             BuildableName = "HapticSense.app"
             BlueprintName = "HapticSense"
             ReferencedContainer = "container:HapticSense.xcodeproj">
