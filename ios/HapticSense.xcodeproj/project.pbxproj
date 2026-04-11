@@ -20,6 +20,7 @@
 		BC7B5C3D41F7366530910A74 /* AVFoundation.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 2B2FD8A4EF7333A210FCDE86 /* AVFoundation.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D9A30935E7B1AFAC235D74BD /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2B2FD8A4EF7333A210FCDE86 /* AVFoundation.framework */; };
 		E8BBEAB82CD9491512CA36EF /* SocketIOClient in Frameworks */ = {isa = PBXBuildFile; productRef = 4B0C56C29CE6C0AF5EE4D040 /* SocketIOClient */; };
+		F1A2B3C4D5E6F7A8B9C0D1E2 /* HapticsDebugView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6A7B8C9D0E1F2 /* HapticsDebugView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -47,6 +48,7 @@
 		74D0BBBEB08450F3FCDB59C7 /* CoreHaptics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = CoreHaptics.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		7650A666027F473AAE43466C /* QRScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRScannerView.swift; sourceTree = "<group>"; };
 		96715353C6FD6D1785B2AEB5 /* HapticPatterns.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticPatterns.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F6A7B8C9D0E1F2 /* HapticsDebugView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticsDebugView.swift; sourceTree = "<group>"; };
 		A6DF0C3BC2E92216F0228D53 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		C94530AE1A801DC4F2773D2F /* .cursorrules */ = {isa = PBXFileReference; path = .cursorrules; sourceTree = "<group>"; };
 		D361DAB8A8038AE1BC2CE2D9 /* HapticEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticEngine.swift; sourceTree = "<group>"; };
@@ -104,6 +106,7 @@
 		9556551CA0BD70570F6A0B36 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				A1B2C3D4E5F6A7B8C9D0E1F2 /* HapticsDebugView.swift */,
 				3B42D5CE394C8789422C542E /* PulsingOrbView.swift */,
 				7650A666027F473AAE43466C /* QRScannerView.swift */,
 			);
@@ -206,6 +209,7 @@
 				4C7034E07F75C7A08B96BCE3 /* HapticEvent.swift in Sources */,
 				31FC6274AA263A2C8CD0C200 /* HapticPatterns.swift in Sources */,
 				B7F130A2D2CF319A41274A45 /* HapticSenseApp.swift in Sources */,
+				F1A2B3C4D5E6F7A8B9C0D1E2 /* HapticsDebugView.swift in Sources */,
 				B6B2F8CF9415FCF2E03E9E4C /* PulsingOrbView.swift in Sources */,
 				7F52A104C1162353FE5148D9 /* QRScannerView.swift in Sources */,
 				3152F06DA6FA46A460EAE889 /* SocketManager.swift in Sources */,

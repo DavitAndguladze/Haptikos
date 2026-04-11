@@ -53,6 +53,7 @@ final class HapticSocketManager: ObservableObject {
             DispatchQueue.main.async {
                 self?.lastEvent = event
             }
+            HapticEngine.shared.playEvent(event)
         }
 
         socket.connect()
