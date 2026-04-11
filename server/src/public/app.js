@@ -524,25 +524,154 @@ window.IHear = {
 // ─── Socket.IO ────────────────────────────────────────────────────────────────
 const socket = io({ transports: ['websocket'], query: { role: 'dashboard' } });
 
-socket.on('connect', () => {
-  console.log('[IHear] Socket connected');
-});
+socket.on('connect', () => { console.log('[IHear] Socket connected'); });
+socket.on('disconnect', () => { console.log('[IHear] Socket disconnected'); });
+socket.on('phone-count', (n) => { window.IHear.setPhoneCount(n); });
 
-socket.on('disconnect', () => {
-  console.log('[IHear] Socket disconnected');
+// When a phone connects, measure round-trip latency for Spotify beat scheduling.
+let networkLatencyMs = 30;  // conservative default until measured
+socket.on('phone-connected', () => {
+  const t0 = Date.now();
+  socket.emit('ping-phone', t0);
 });
-
-// Update phone count badge whenever the server broadcasts it.
-socket.on('phone-count', (n) => {
-  window.IHear.setPhoneCount(n);
+socket.on('pong-phone', (t0) => {
+  networkLatencyMs = Math.round((Date.now() - t0) / 2);
+  console.log(`[IHear] Network latency: ${networkLatencyMs}ms`);
 });
 
 /**
  * Emit a detected haptic event to the server so it relays to all phones.
- * Called from the drawFrame loop.
+ * Called from the analysis loop (audio mode) and beat scheduler (Spotify mode).
  */
 function emitHaptic(event) {
   if (socket.connected) socket.emit('haptic', event);
+}
+
+// ─── Spotify Beat Sync ────────────────────────────────────────────────────────
+let _spotifyToken    = null;
+let _spotifyTrackId  = null;
+let _beatTimeouts    = [];
+let _spotifySyncId   = null;   // setInterval for re-sync
+let _spotifyMode     = false;
+
+const spotifyTrackEl = document.getElementById('spotifyTrack');
+const spotifyBtn     = document.getElementById('spotifyBtn');
+const audioHintEl    = document.getElementById('audioHint');
+
+/** Cancel all pending beat timeouts. */
+function _clearBeatTimeouts() {
+  _beatTimeouts.forEach(clearTimeout);
+  _beatTimeouts = [];
+}
+
+/**
+ * Schedule beats from Spotify's analysis relative to where the track is now.
+ * @param {Array}  beats       - from audio-analysis response
+ * @param {number} progressMs  - current track position in ms
+ */
+function _scheduleBeatWindow(beats, progressMs) {
+  _clearBeatTimeouts();
+  const refNow = Date.now();
+
+  for (const beat of beats) {
+    const beatAbsMs  = beat.start * 1000;               // beat position in track (ms)
+    const fireInMs   = beatAbsMs - progressMs - networkLatencyMs;
+    if (fireInMs < -50) continue;                        // already passed
+    const delay      = Math.max(0, fireInMs);
+    const confidence = Math.min(beat.confidence ?? 0.8, 1.0);
+    const dur        = Math.round((beat.duration ?? 0.4) * 1000);
+
+    const t = setTimeout(() => {
+      emitHaptic({
+        timestamp:  Date.now(),
+        event_type: 'bass_hit',
+        intensity:  Math.max(confidence, 0.5),           // floor so every beat registers
+        duration:   dur,
+        label:      'Beat',
+      });
+    }, delay);
+    _beatTimeouts.push(t);
+  }
+  console.log(`[IHear] Scheduled ${_beatTimeouts.length} beats (latency=${networkLatencyMs}ms)`);
+}
+
+/** Poll Spotify + re-schedule beats every 3 seconds to correct clock drift. */
+async function _spotifySyncTick(beats) {
+  const player = await window.SpotifyAPI.getCurrentlyPlaying(_spotifyToken);
+  if (!player || !player.is_playing) return;
+
+  // Track changed — restart with new analysis.
+  if (player.item?.id && player.item.id !== _spotifyTrackId) {
+    stopSpotifySync();
+    startSpotifySync();
+    return;
+  }
+
+  _scheduleBeatWindow(beats, player.progress_ms);
+}
+
+async function startSpotifySync() {
+  if (!_spotifyToken) return;
+
+  statusDot.className    = 'dot dot--active';
+  statusText.textContent = 'Spotify — loading track…';
+
+  const player = await window.SpotifyAPI.getCurrentlyPlaying(_spotifyToken);
+  if (!player || !player.item) {
+    statusText.textContent = 'Spotify — nothing playing';
+    return;
+  }
+  if (!player.is_playing) {
+    statusText.textContent = 'Spotify — paused';
+    return;
+  }
+
+  _spotifyTrackId = player.item.id;
+  const trackName = `${player.item.name} — ${(player.item.artists ?? []).map(a => a.name).join(', ')}`;
+  spotifyTrackEl.textContent = '♫ ' + trackName;
+  spotifyTrackEl.style.display = '';
+  statusText.textContent = 'Spotify Synced';
+  _spotifyMode = true;
+
+  const analysis = await window.SpotifyAPI.getAudioAnalysis(_spotifyToken, _spotifyTrackId);
+  if (!analysis?.beats?.length) {
+    statusText.textContent = 'Spotify — analysis unavailable';
+    return;
+  }
+
+  // Initial schedule using the progress from the earlier /player call.
+  // Fetch fresh progress right before scheduling to minimize offset error.
+  const fresh = await window.SpotifyAPI.getCurrentlyPlaying(_spotifyToken);
+  _scheduleBeatWindow(analysis.beats, fresh?.progress_ms ?? player.progress_ms);
+
+  _spotifySyncId = setInterval(() => _spotifySyncTick(analysis.beats), 3000);
+}
+
+function stopSpotifySync() {
+  _clearBeatTimeouts();
+  if (_spotifySyncId) { clearInterval(_spotifySyncId); _spotifySyncId = null; }
+  _spotifyMode    = false;
+  _spotifyTrackId = null;
+  spotifyTrackEl.style.display = 'none';
+}
+
+// Spotify connect button handler.
+if (spotifyBtn) {
+  spotifyBtn.addEventListener('click', async () => {
+    if (_spotifyMode) {
+      // Disconnect Spotify — back to audio mode.
+      stopSpotifySync();
+      _spotifyToken = null;
+      window.SpotifyAuth.clearToken();
+      spotifyBtn.textContent = 'Connect Spotify';
+      spotifyBtn.classList.remove('btn-spotify--active');
+      audioHintEl.style.display = '';
+      statusDot.className    = 'dot dot--idle';
+      statusText.textContent = 'Inactive';
+    } else {
+      window.SpotifyAuth.start();
+    }
+  });
 }
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
@@ -557,3 +686,18 @@ window.addEventListener('resize', () => {
     if (!isListening) drawIdle();
   }, 100);
 });
+
+// Handle Spotify OAuth callback (?code= in URL) or restore existing session.
+(async () => {
+  if (typeof window.SpotifyAuth === 'undefined') return;
+  const token = await window.SpotifyAuth.handleCallback();
+  if (!token) return;
+
+  _spotifyToken = token;
+  spotifyBtn.textContent = 'Disconnect Spotify';
+  spotifyBtn.classList.add('btn-spotify--active');
+  audioHintEl.style.display = 'none';
+  startBtn.style.display    = 'none';    // Spotify mode — audio capture not needed
+
+  await startSpotifySync();
+})();

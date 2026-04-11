@@ -26,12 +26,23 @@ export function createSocketManager(httpServer: ReturnType<typeof createServer>)
     if (role === 'phone') {
       socket.join('phones');
       broadcastPhoneCount();
+      io.to('dashboard').emit('phone-connected');  // triggers latency measurement
     } else {
       socket.join('dashboard');
     }
 
     socket.on('haptic', (event: HapticEvent) => {
       io.to('phones').emit('haptic', event);
+    });
+
+    // Latency measurement relay for Spotify beat-sync timing.
+    // Dashboard emits ping-phone → server relays to phones → phones reply pong-phone
+    // → server relays back to dashboard → dashboard measures RTT/2.
+    socket.on('ping-phone', (t0: number) => {
+      io.to('phones').emit('ping-phone', t0);
+    });
+    socket.on('pong-phone', (t0: number) => {
+      io.to('dashboard').emit('pong-phone', t0);
     });
 
     socket.on('disconnect', () => {

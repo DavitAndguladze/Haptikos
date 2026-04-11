@@ -46,6 +46,11 @@ final class HapticSocketManager: ObservableObject {
             DispatchQueue.main.async { self?.isConnected = false }
         }
 
+        socket.on("ping-phone") { [weak socket] data, _ in
+            guard let t0 = (data.first as? NSNumber)?.doubleValue else { return }
+            socket?.emit("pong-phone", t0)
+        }
+
         socket.on("haptic") { [weak self] data, _ in
             guard let dict = data.first,
                   let jsonData = try? JSONSerialization.data(withJSONObject: dict),

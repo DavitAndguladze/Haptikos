@@ -18,11 +18,15 @@
       <canvas id="visualizer"></canvas>
 
       <div class="controls">
-        <button id="startBtn">Start Listening</button>
-        <p class="audio-hint">Chrome will ask you to share your screen — pick <strong>Entire Screen</strong>, check <strong>"Share system audio"</strong>, then click Share.</p>
+        <div class="mode-row">
+          <button id="startBtn">Start Listening</button>
+          <button id="spotifyBtn" class="btn-spotify">Connect Spotify</button>
+        </div>
+        <p class="audio-hint" id="audioHint">Chrome will ask you to share your screen — pick <strong>Entire Screen</strong>, check <strong>"Share system audio"</strong>, then click Share.</p>
+        <p class="spotify-track" id="spotifyTrack" style="display:none"></p>
         <div class="status" id="statusLine">
           <span id="statusDot" class="dot dot--idle"></span>
-          <span id="statusText">Microphone Inactive</span>
+          <span id="statusText">Inactive</span>
         </div>
       </div>
     </section>
@@ -64,6 +68,7 @@
   </div>
 
   <script src="/socket.io/socket.io.js"></script>
+  <script src="spotify.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
