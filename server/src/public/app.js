@@ -12,19 +12,19 @@ const BANDS = [
 ];
 
 // ─── Radial visualizer constants ──────────────────────────────────────────────
-const NUM_SPOKES     = 120;  // per ring — 5 rings × 120 spokes = 600 lines/frame
-const INNER_RADIUS   = 40;   // starting radius of the innermost ring, px (at 550 ref)
-const MIN_THICKNESS  = 3;    // minimum spoke length when a band is silent, px
-const MAX_THICKNESS  = 60;   // maximum spoke length at full energy, px
-const DOMINANT_BONUS = 1.4;  // dominant band gets 40% extra thickness
+const NUM_SPOKES     = 144;  // per ring — 4 rings × 144 spokes = 576 lines/frame
+const INNER_RADIUS   = 30;   // starting radius of the innermost ring, px (at 550 ref)
+const MIN_THICKNESS  = 2;    // paper-thin minimum when a band is silent, px
+const MAX_THICKNESS  = 90;   // maximum spoke length at full energy, px
+const DOMINANT_BONUS = 2.2;  // dominant band expands dramatically, pushing outer rings out
 
-// Ring config — color only. Base radii are computed dynamically each frame.
+// Ring config — 4 concentric layers, innermost to outermost.
+// Base radii are computed dynamically each frame via zero-gap stacking.
 const RING_CONFIG = [
-  { name: 'subBass',  color: '#1B1B8F', r: 27,  g: 27,  b: 143 }, // innermost — dark blue
-  { name: 'bass',     color: '#4DA6FF', r: 77,  g: 166, b: 255 }, // light blue
-  { name: 'mids',     color: '#FF3355', r: 255, g: 51,  b: 85  }, // red
-  { name: 'highs',    color: '#FF9F1C', r: 255, g: 159, b: 28  }, // orange
-  { name: 'presence', color: '#FFD600', r: 255, g: 214, b: 0   }, // outermost — yellow
+  { name: 'subBass', color: '#1A2FCC', r: 26,  g: 47,  b: 204 }, // Deep Blue   — innermost
+  { name: 'bass',    color: '#00C9B1', r: 0,   g: 201, b: 177 }, // Teal
+  { name: 'mids',    color: '#FF5A5F', r: 255, g: 90,  b: 95  }, // Coral
+  { name: 'highs',   color: '#FFD700', r: 255, g: 215, b: 0   }, // Bright Gold — outermost
 ];
 
 // Animation time reference for wobble motion.
@@ -284,7 +284,7 @@ function drawRing(cx, cy, ringLayout, time) {
     prev[i]           = _spokeSmoothed[i];
   }
 
-  const brightness = 0.25 + energy * 0.75; // dim (0.25) when quiet → full (1.0) when loud
+  const brightness = 0.2 + energy * 0.8; // wide range: barely-visible (0.2) when silent → full (1.0) when loud
 
   ctx.save();
   ctx.lineWidth   = 2;
@@ -320,7 +320,7 @@ function drawRadial(fftData, bands) {
   // Find dominant band.
   let dominantName   = 'subBass';
   let dominantEnergy = 0;
-  for (const key of ['subBass', 'bass', 'mids', 'highs', 'presence']) {
+  for (const key of ['subBass', 'bass', 'mids', 'highs']) {
     if (bands[key] > dominantEnergy) { dominantEnergy = bands[key]; dominantName = key; }
   }
 
