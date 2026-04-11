@@ -1,0 +1,277 @@
+/* ─── Reset ─────────────────────────────────────────────────────────── */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+/* ─── Design tokens ─────────────────────────────────────────────────── */
+:root {
+  /* Backgrounds */
+  --bg-primary:      #0A0A12;
+  --bg-card:         #12121F;
+  --bg-card-border:  #1E1E35;
+
+  /* Accent colours */
+  --cyan:    #00F0FF;
+  --magenta: #FF2D78;
+  --orange:  #FF6B2B;
+  --yellow:  #FFD600;
+
+  /* Text */
+  --text-primary: #E8E8F0;
+  --text-muted:   #6B6B80;
+
+  /* Glow helpers */
+  --glow-cyan:    0 0 20px rgba(0, 240, 255, 0.3);
+  --glow-magenta: 0 0 20px rgba(255, 45, 120, 0.3);
+
+  /* Typography */
+  --font-display: 'Outfit', sans-serif;
+  --font-mono:    'JetBrains Mono', monospace;
+}
+
+/* ─── Base ──────────────────────────────────────────────────────────── */
+html { scroll-behavior: smooth; }
+
+body {
+  background:  var(--bg-primary);
+  color:       var(--text-primary);
+  font-family: var(--font-mono);
+  min-height:  100vh;
+  display:     flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+::selection { background: var(--cyan); color: #000; }
+
+/* ─── Page container ────────────────────────────────────────────────── */
+.page {
+  width:      100%;
+  max-width:  900px;
+  padding:    0 30px 60px;
+  display:    flex;
+  flex-direction: column;
+  align-items: center;
+  gap:        32px;
+}
+
+/* ─── Title ─────────────────────────────────────────────────────────── */
+.title {
+  font-family:    var(--font-display);
+  font-weight:    700;
+  font-size:      2rem;
+  letter-spacing: 0.05em;
+  color:          var(--text-primary);
+  padding-top:    40px;
+}
+
+/* ─── Visualizer section ────────────────────────────────────────────── */
+.viz-section {
+  display:        flex;
+  flex-direction: column;
+  align-items:    center;
+  gap:            20px;
+}
+
+#visualizer {
+  display: block;
+  /* width / height are set by JS — the canvas is always square */
+}
+
+/* ─── Controls (button + status) ────────────────────────────────────── */
+.controls {
+  display:        flex;
+  flex-direction: column;
+  align-items:    center;
+  gap:            10px;
+}
+
+#startBtn {
+  background:  transparent;
+  border:      1px solid var(--cyan);
+  color:       var(--cyan);
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size:   0.85rem;
+  padding:     10px 28px;
+  border-radius: 6px;
+  cursor:      pointer;
+  transition:  background 0.15s, box-shadow 0.15s;
+}
+
+#startBtn:hover {
+  background:  rgba(0, 240, 255, 0.1);
+  box-shadow:  var(--glow-cyan);
+}
+
+#startBtn.btn--active {
+  border-color: var(--magenta);
+  color:        var(--magenta);
+}
+
+#startBtn.btn--active:hover {
+  background: rgba(255, 45, 120, 0.1);
+  box-shadow: var(--glow-magenta);
+}
+
+/* ─── Status line ───────────────────────────────────────────────────── */
+.status {
+  display:     flex;
+  align-items: center;
+  gap:         8px;
+  font-size:   0.75rem;
+  color:       var(--text-muted);
+}
+
+.status--active { color: var(--text-primary); }
+
+.dot {
+  width:       8px;
+  height:      8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dot--idle  { background: var(--text-muted); }
+.dot--active {
+  background: var(--cyan);
+  box-shadow: 0 0 8px rgba(0, 240, 255, 0.6);
+  animation:  dot-pulse 1.5s ease-in-out infinite;
+}
+.dot--error { background: var(--magenta); }
+
+@keyframes dot-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+/* ─── Bottom 2-column grid ──────────────────────────────────────────── */
+.bottom-grid {
+  display:               grid;
+  grid-template-columns: 1fr 1fr;
+  gap:                   20px;
+  width:                 100%;
+}
+
+/* ─── Cards ─────────────────────────────────────────────────────────── */
+.card {
+  background:    var(--bg-card);
+  border:        1px solid var(--bg-card-border);
+  border-radius: 12px;
+  padding:       24px;
+  min-height:    250px;
+  display:       flex;
+  flex-direction: column;
+  gap:           16px;
+}
+
+.card-title {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size:   0.9rem;
+  color:       var(--text-primary);
+}
+
+/* ─── QR card body ──────────────────────────────────────────────────── */
+.qr-body {
+  display:        flex;
+  flex-direction: column;
+  align-items:    center;
+  gap:            12px;
+  flex:           1;
+}
+
+#qrCode {
+  width:         140px;
+  height:        140px;
+  border-radius: 4px;
+  background:    #fff;
+  display:       block;
+}
+
+.qr-placeholder {
+  width:         140px;
+  height:        140px;
+  border:        1px dashed var(--bg-card-border);
+  border-radius: 4px;
+  align-items:   center;
+  justify-content: center;
+  text-align:    center;
+  padding:       12px;
+  color:         var(--text-muted);
+  font-size:     0.72rem;
+  display:       none; /* toggled by img onerror */
+}
+
+.scan-hint {
+  font-size: 0.75rem;
+  color:     var(--text-muted);
+}
+
+.phones-count {
+  font-size: 0.75rem;
+  color:     var(--text-muted);
+}
+
+.phones-count.has-phones { color: var(--cyan); }
+
+/* ─── Event log ─────────────────────────────────────────────────────── */
+.log-list {
+  list-style:  none;
+  max-height:  200px;
+  overflow-y:  auto;
+  display:     flex;
+  flex-direction: column;
+  gap:         8px;
+  flex:        1;
+}
+
+.log-list::-webkit-scrollbar       { width: 4px; }
+.log-list::-webkit-scrollbar-track { background: transparent; }
+.log-list::-webkit-scrollbar-thumb { background: var(--bg-card-border); border-radius: 2px; }
+
+.log-empty {
+  font-size:  0.75rem;
+  color:      var(--text-muted);
+  font-style: italic;
+}
+
+.log-entry {
+  display:     flex;
+  align-items: center;
+  gap:         10px;
+  animation:   log-slide-in 0.15s ease;
+}
+
+@keyframes log-slide-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.log-dot {
+  width:         8px;
+  height:        8px;
+  border-radius: 50%;
+  flex-shrink:   0;
+}
+
+.log-dot--bass_hit   { background: #4DA6FF; } /* light blue  — bass */
+.log-dot--rhythm_tap { background: #FF3355; } /* red         — mids */
+.log-dot--alert_snap { background: #FF9F1C; } /* orange      — highs */
+.log-dot--sustained  { background: #1B1B8F; } /* dark blue   — sub-bass */
+
+.log-label {
+  flex:      1;
+  font-size: 0.8rem;
+  color:     var(--text-primary);
+}
+
+.log-time {
+  font-size:   0.75rem;
+  color:       var(--text-muted);
+  white-space: nowrap;
+}
+
+/* ─── Responsive ────────────────────────────────────────────────────── */
+@media (max-width: 700px) {
+  .page        { padding: 0 20px 40px; }
+  .bottom-grid { grid-template-columns: 1fr; }
+}
