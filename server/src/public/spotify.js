@@ -4,17 +4,20 @@
 //
 // SETUP (one-time, ~5 min):
 //   1. Go to https://developer.spotify.com → Create an app
-//   2. In the app settings add this Redirect URI:  http://<YOUR-LAN-IP>:3000/
+//   2. In the app settings add this Redirect URI:  http://localhost:3000/
+//      (Spotify only allows HTTP for localhost — LAN IPs require HTTPS)
 //   3. Paste your Client ID below.
+//   4. Open the dashboard at http://localhost:3000/ to authenticate.
+//      Phones still connect via the LAN IP shown in the QR code.
 //
-const SPOTIFY_CLIENT_ID = 'YOUR_SPOTIFY_CLIENT_ID';
-const SPOTIFY_REDIRECT  = window.location.origin + '/';
-const SPOTIFY_SCOPE     = 'user-read-playback-state';
+const SPOTIFY_CLIENT_ID = 'bb53a9fb6bda4aabbf47a886075bc5b1';
+const SPOTIFY_REDIRECT  = 'http://localhost:3000/';
+const SPOTIFY_SCOPE = 'user-read-playback-state';
 
 // ─── PKCE crypto helpers ───────────────────────────────────────────────────────
 function _randomString(len) {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
-  const arr   = new Uint8Array(len);
+  const arr = new Uint8Array(len);
   crypto.getRandomValues(arr);
   return Array.from(arr, b => chars[b % chars.length]).join('');
 }
@@ -29,16 +32,16 @@ function _base64url(buf) {
 }
 
 // ─── Token storage (session only — no localStorage for demo security) ──────────
-const _TK  = 'sp_token';
+const _TK = 'sp_token';
 const _EXP = 'sp_expires';
 
 function _saveToken(token, expiresIn) {
-  sessionStorage.setItem(_TK,  token);
+  sessionStorage.setItem(_TK, token);
   sessionStorage.setItem(_EXP, String(Date.now() + expiresIn * 1000));
 }
 
 function _loadToken() {
-  const token   = sessionStorage.getItem(_TK);
+  const token = sessionStorage.getItem(_TK);
   const expires = Number(sessionStorage.getItem(_EXP));
   if (!token || !expires || Date.now() > expires - 60_000) return null;
   return token;
@@ -59,16 +62,16 @@ window.SpotifyAuth = {
       alert('Set SPOTIFY_CLIENT_ID in spotify.js first.\nSee the comment at the top of the file.');
       return;
     }
-    const verifier  = _randomString(128);
+    const verifier = _randomString(128);
     const challenge = _base64url(await _sha256(verifier));
     sessionStorage.setItem('sp_verifier', verifier);
     const params = new URLSearchParams({
-      client_id:             SPOTIFY_CLIENT_ID,
-      response_type:         'code',
-      redirect_uri:          SPOTIFY_REDIRECT,
-      scope:                 SPOTIFY_SCOPE,
+      client_id: SPOTIFY_CLIENT_ID,
+      response_type: 'code',
+      redirect_uri: SPOTIFY_REDIRECT,
+      scope: SPOTIFY_SCOPE,
       code_challenge_method: 'S256',
-      code_challenge:        challenge,
+      code_challenge: challenge,
     });
     window.location.href = 'https://accounts.spotify.com/authorize?' + params;
   },
@@ -82,8 +85,8 @@ window.SpotifyAuth = {
     const existing = _loadToken();
     if (existing) return existing;
 
-    const params   = new URLSearchParams(window.location.search);
-    const code     = params.get('code');
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code');
     const verifier = sessionStorage.getItem('sp_verifier');
     if (!code || !verifier) return null;
 
@@ -92,13 +95,13 @@ window.SpotifyAuth = {
 
     try {
       const resp = await fetch('https://accounts.spotify.com/api/token', {
-        method:  'POST',
+        method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body:    new URLSearchParams({
-          grant_type:    'authorization_code',
+        body: new URLSearchParams({
+          grant_type: 'authorization_code',
           code,
-          redirect_uri:  SPOTIFY_REDIRECT,
-          client_id:     SPOTIFY_CLIENT_ID,
+          redirect_uri: SPOTIFY_REDIRECT,
+          client_id: SPOTIFY_CLIENT_ID,
           code_verifier: verifier,
         }),
       });
@@ -115,7 +118,7 @@ window.SpotifyAuth = {
     return null;
   },
 
-  getToken:   _loadToken,
+  getToken: _loadToken,
   clearToken: _clearToken,
 };
 
