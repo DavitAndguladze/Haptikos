@@ -1,0 +1,416 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		1307BAC9EE2AA54371E345F8 /* HapticEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = D361DAB8A8038AE1BC2CE2D9 /* HapticEngine.swift */; };
+		3152F06DA6FA46A460EAE889 /* SocketManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1788D7314B968EB2C34029 /* SocketManager.swift */; };
+		31FC6274AA263A2C8CD0C200 /* HapticPatterns.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96715353C6FD6D1785B2AEB5 /* HapticPatterns.swift */; };
+		49BE56009766B5D4A344DC56 /* CoreHaptics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 74D0BBBEB08450F3FCDB59C7 /* CoreHaptics.framework */; };
+		4C7034E07F75C7A08B96BCE3 /* HapticEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 460CE983F16AED65DBB4055B /* HapticEvent.swift */; };
+		7F52A104C1162353FE5148D9 /* QRScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7650A666027F473AAE43466C /* QRScannerView.swift */; };
+		853FBC7C5031C493C889B90C /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6DF0C3BC2E92216F0228D53 /* ContentView.swift */; };
+		A8BEF5704DAFB3007372D06C /* CoreHaptics.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 74D0BBBEB08450F3FCDB59C7 /* CoreHaptics.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		B6B2F8CF9415FCF2E03E9E4C /* PulsingOrbView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B42D5CE394C8789422C542E /* PulsingOrbView.swift */; };
+		B7F130A2D2CF319A41274A45 /* HapticSenseApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ABB9C9698529732A0EDC09B /* HapticSenseApp.swift */; };
+		BC7B5C3D41F7366530910A74 /* AVFoundation.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 2B2FD8A4EF7333A210FCDE86 /* AVFoundation.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		D9A30935E7B1AFAC235D74BD /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2B2FD8A4EF7333A210FCDE86 /* AVFoundation.framework */; };
+		E8BBEAB82CD9491512CA36EF /* SocketIOClient in Frameworks */ = {isa = PBXBuildFile; productRef = 4B0C56C29CE6C0AF5EE4D040 /* SocketIOClient */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		BEE24015893B0E444E6AE12E /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				A8BEF5704DAFB3007372D06C /* CoreHaptics.framework in Embed Frameworks */,
+				BC7B5C3D41F7366530910A74 /* AVFoundation.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		1ABB9C9698529732A0EDC09B /* HapticSenseApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticSenseApp.swift; sourceTree = "<group>"; };
+		2B2FD8A4EF7333A210FCDE86 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = AVFoundation.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		3B42D5CE394C8789422C542E /* PulsingOrbView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PulsingOrbView.swift; sourceTree = "<group>"; };
+		460CE983F16AED65DBB4055B /* HapticEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticEvent.swift; sourceTree = "<group>"; };
+		5B1788D7314B968EB2C34029 /* SocketManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocketManager.swift; sourceTree = "<group>"; };
+		5E9B7D8E61E140C26C6A2BB6 /* HapticSense.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = HapticSense.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		74D0BBBEB08450F3FCDB59C7 /* CoreHaptics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = CoreHaptics.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		7650A666027F473AAE43466C /* QRScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRScannerView.swift; sourceTree = "<group>"; };
+		96715353C6FD6D1785B2AEB5 /* HapticPatterns.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticPatterns.swift; sourceTree = "<group>"; };
+		A6DF0C3BC2E92216F0228D53 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		C94530AE1A801DC4F2773D2F /* .cursorrules */ = {isa = PBXFileReference; path = .cursorrules; sourceTree = "<group>"; };
+		D361DAB8A8038AE1BC2CE2D9 /* HapticEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticEngine.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		80F6C3EED91C7FFFF991199C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E8BBEAB82CD9491512CA36EF /* SocketIOClient in Frameworks */,
+				49BE56009766B5D4A344DC56 /* CoreHaptics.framework in Frameworks */,
+				D9A30935E7B1AFAC235D74BD /* AVFoundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		091E226C3B74CC816DDFFAA7 /* Haptics */ = {
+			isa = PBXGroup;
+			children = (
+				C94530AE1A801DC4F2773D2F /* .cursorrules */,
+				D361DAB8A8038AE1BC2CE2D9 /* HapticEngine.swift */,
+				96715353C6FD6D1785B2AEB5 /* HapticPatterns.swift */,
+			);
+			path = Haptics;
+			sourceTree = "<group>";
+		};
+		3231FACD66528ACCFE7CF700 = {
+			isa = PBXGroup;
+			children = (
+				F03CA1DEA6DE3D93F7977A83 /* HapticSense */,
+				B94AFDA448FE5748C6D3C496 /* Frameworks */,
+				62B0515DBEBEFB41A8308D9C /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		49A12EB835C71182449703B4 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				460CE983F16AED65DBB4055B /* HapticEvent.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		62B0515DBEBEFB41A8308D9C /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				5E9B7D8E61E140C26C6A2BB6 /* HapticSense.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		9556551CA0BD70570F6A0B36 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				3B42D5CE394C8789422C542E /* PulsingOrbView.swift */,
+				7650A666027F473AAE43466C /* QRScannerView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		B94AFDA448FE5748C6D3C496 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				2B2FD8A4EF7333A210FCDE86 /* AVFoundation.framework */,
+				74D0BBBEB08450F3FCDB59C7 /* CoreHaptics.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		C42F318A4B2BEF890BF6C830 /* Network */ = {
+			isa = PBXGroup;
+			children = (
+				5B1788D7314B968EB2C34029 /* SocketManager.swift */,
+			);
+			path = Network;
+			sourceTree = "<group>";
+		};
+		F03CA1DEA6DE3D93F7977A83 /* HapticSense */ = {
+			isa = PBXGroup;
+			children = (
+				A6DF0C3BC2E92216F0228D53 /* ContentView.swift */,
+				1ABB9C9698529732A0EDC09B /* HapticSenseApp.swift */,
+				091E226C3B74CC816DDFFAA7 /* Haptics */,
+				49A12EB835C71182449703B4 /* Models */,
+				C42F318A4B2BEF890BF6C830 /* Network */,
+				9556551CA0BD70570F6A0B36 /* Views */,
+			);
+			path = HapticSense;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		2C0D76BC57B13003A1F63FA8 /* HapticSense */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 349387BF9BEFD13A37EDBE41 /* Build configuration list for PBXNativeTarget "HapticSense" */;
+			buildPhases = (
+				8908BE784302DBA68D8D482D /* Sources */,
+				80F6C3EED91C7FFFF991199C /* Frameworks */,
+				BEE24015893B0E444E6AE12E /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = HapticSense;
+			packageProductDependencies = (
+				4B0C56C29CE6C0AF5EE4D040 /* SocketIOClient */,
+			);
+			productName = HapticSense;
+			productReference = 5E9B7D8E61E140C26C6A2BB6 /* HapticSense.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		CB0BD52A299D3F9A4612CB7F /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1600;
+				TargetAttributes = {
+				};
+			};
+			buildConfigurationList = 8B77AF7F6B0B47D5E479C9D4 /* Build configuration list for PBXProject "HapticSense" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 3231FACD66528ACCFE7CF700;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				AD537D816EB72C14F70D9540 /* XCRemoteSwiftPackageReference "socket.io-client-swift" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 62B0515DBEBEFB41A8308D9C /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				2C0D76BC57B13003A1F63FA8 /* HapticSense */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		8908BE784302DBA68D8D482D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				853FBC7C5031C493C889B90C /* ContentView.swift in Sources */,
+				1307BAC9EE2AA54371E345F8 /* HapticEngine.swift in Sources */,
+				4C7034E07F75C7A08B96BCE3 /* HapticEvent.swift in Sources */,
+				31FC6274AA263A2C8CD0C200 /* HapticPatterns.swift in Sources */,
+				B7F130A2D2CF319A41274A45 /* HapticSenseApp.swift in Sources */,
+				B6B2F8CF9415FCF2E03E9E4C /* PulsingOrbView.swift in Sources */,
+				7F52A104C1162353FE5148D9 /* QRScannerView.swift in Sources */,
+				3152F06DA6FA46A460EAE889 /* SocketManager.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		09E26371FE5967D2FDA699C4 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		2DA593C18F26EAE7AD273420 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Camera access is needed to scan the server QR code for pairing.";
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.codesociety.HapticSense;
+				SDKROOT = iphoneos;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		47C689D27C2FBDAE74CD2C23 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Camera access is needed to scan the server QR code for pairing.";
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.codesociety.HapticSense;
+				SDKROOT = iphoneos;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		DA6606B075C93C88311559BD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		349387BF9BEFD13A37EDBE41 /* Build configuration list for PBXNativeTarget "HapticSense" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2DA593C18F26EAE7AD273420 /* Debug */,
+				47C689D27C2FBDAE74CD2C23 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		8B77AF7F6B0B47D5E479C9D4 /* Build configuration list for PBXProject "HapticSense" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DA6606B075C93C88311559BD /* Debug */,
+				09E26371FE5967D2FDA699C4 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		AD537D816EB72C14F70D9540 /* XCRemoteSwiftPackageReference "socket.io-client-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/socketio/socket.io-client-swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 16.1.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		4B0C56C29CE6C0AF5EE4D040 /* SocketIOClient */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AD537D816EB72C14F70D9540 /* XCRemoteSwiftPackageReference "socket.io-client-swift" */;
+			productName = SocketIOClient;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = CB0BD52A299D3F9A4612CB7F /* Project object */;
+}

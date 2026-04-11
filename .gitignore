@@ -11,9 +11,21 @@ dist/
 # Xcode
 ios/HapticSense.xcodeproj/project.xcworkspace/xcuserdata/
 ios/*.xcodeproj/xcuserdata/
+ios/*.xcodeproj/project.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist
 ios/DerivedData/
 ios/.build/
+build/
+*.ipa
+*.dSYM.zip
+*.dSYM
+*.xcscmblueprint
+
+# CocoaPods
+Pods/
 
 # Claude
+PLAN.md
+plan.md
 .cursorrules
 claude.md
+CLAUDE.md
