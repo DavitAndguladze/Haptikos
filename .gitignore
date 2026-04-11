@@ -5,6 +5,7 @@ dist/
 *.md
 !README.md
 
+PLAN.md
 # macOS
 .DS_Store
 
