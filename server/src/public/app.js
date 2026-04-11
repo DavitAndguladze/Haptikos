@@ -254,33 +254,24 @@ function computeRingLayout(bands, dominantName) {
 }
 
 // Draw one ring using its computed layout (dynamic baseRadius + avgThickness).
-function drawRing(cx, cy, ringLayout, time) {
+// sharedShape: pre-smoothed multiplier array computed once per frame in drawRadial,
+// so every ring follows the same organic shape instead of independent patterns.
+function drawRing(cx, cy, ringLayout, time, sharedShape) {
   const { name, color, r, g, b, baseRadius, avgThickness, energy } = ringLayout;
 
-  const minPx        = MIN_THICKNESS * _scale;
-  const wobbleAmount = energy * avgThickness * 0.5;
+  const minPx = MIN_THICKNESS * _scale;
 
-  // Build raw per-spoke lengths with organic wobble.
+  // Apply the shared shape scaled by this ring's energy.
+  // energy=0 → perfect circle (avgThickness); energy=1 → full shared shape.
   for (let i = 0; i < NUM_SPOKES; i++) {
-    let length = avgThickness;
-    length += Math.sin(i * 0.15 + time * 2.5)       * wobbleAmount * 0.50;
-    length += Math.sin(i * 0.40 + time * 4.0 + 1.5) * wobbleAmount * 0.35;
-    length += Math.sin(i * 0.90 + time * 6.0 + 3.0) * wobbleAmount * 0.25;
-    length += Math.sin(i * 1.70 + i * i * 0.01)     * wobbleAmount * 0.15; // per-spoke noise
+    const length = avgThickness * (sharedShape[i] * energy + (1 - energy));
     _spokeLengths[i] = Math.max(minPx, Math.min(MAX_THICKNESS * _scale * 1.5, length));
-  }
-
-  // Spatial smoothing — ±2 neighbours, wrapping at seam.
-  for (let i = 0; i < NUM_SPOKES; i++) {
-    let sum = 0;
-    for (let d = -2; d <= 2; d++) sum += _spokeLengths[(i + d + NUM_SPOKES) % NUM_SPOKES];
-    _spokeSmoothed[i] = sum / 5;
   }
 
   // Temporal smoothing — 40% previous, 60% current.
   const prev = _ringPrev[name];
   for (let i = 0; i < NUM_SPOKES; i++) {
-    _spokeSmoothed[i] = prev[i] * 0.4 + _spokeSmoothed[i] * 0.6;
+    _spokeSmoothed[i] = prev[i] * 0.4 + _spokeLengths[i] * 0.6;
     prev[i]           = _spokeSmoothed[i];
   }
 
@@ -336,8 +327,25 @@ function drawRadial(fftData, bands) {
   }
   _previousLayout = layout.map(ring => ({ ...ring }));
 
+  // Compute ONE shared shape profile per frame — all rings follow the same organic
+  // outline so they look like aligned concentric layers rather than independent shapes.
+  const _shapeRaw = new Array(NUM_SPOKES);
+  for (let i = 0; i < NUM_SPOKES; i++) {
+    const w1    = Math.sin(i * 0.15 + time * 2.5)       * 0.30;
+    const w2    = Math.sin(i * 0.40 + time * 4.0 + 1.5) * 0.20;
+    const w3    = Math.sin(i * 0.90 + time * 6.0 + 3.0) * 0.10;
+    const noise = Math.sin(i * 1.70 + i * i * 0.01)     * 0.05;
+    _shapeRaw[i] = 1.0 + w1 + w2 + w3 + noise;
+  }
+  const smoothedShape = new Array(NUM_SPOKES);
+  for (let i = 0; i < NUM_SPOKES; i++) {
+    let sum = 0;
+    for (let j = -2; j <= 2; j++) sum += _shapeRaw[(i + j + NUM_SPOKES) % NUM_SPOKES];
+    smoothedShape[i] = sum / 5;
+  }
+
   for (const ringLayout of layout) {
-    drawRing(cx, cy, ringLayout, time);
+    drawRing(cx, cy, ringLayout, time, smoothedShape);
   }
 }
 

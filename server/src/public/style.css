@@ -23,8 +23,8 @@
   --glow-magenta: 0 0 20px rgba(255, 45, 120, 0.3);
 
   /* Typography */
-  --font-display: 'Outfit', sans-serif;
-  --font-mono:    'JetBrains Mono', monospace;
+  --font-display: 'DM Sans', sans-serif;
+  --font-mono:    'DM Sans', sans-serif;
 }
 
 /* ─── Base ──────────────────────────────────────────────────────────── */
