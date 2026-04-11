@@ -22,8 +22,8 @@ app.use(express.static(path.join(__dirname, '../src/public')));
 app.get('/qr', async (_req, res) => {
   const url = `http://${getLocalIp()}:${PORT}`;
   const buf = await QRCode.toBuffer(url);
-  res.set('Content-Type', 'image/png');
-  res.send(buf);
+  res.type('png');
+  res.end(buf);
 });
 
 app.get('/health', (_req, res) => {
