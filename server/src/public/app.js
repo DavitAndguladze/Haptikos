@@ -520,7 +520,7 @@ function runAnalysis() {
       addEvent(ev);
       emitHaptic(ev);
     }
-    console.debug('[IHear]', ev.event_type, ev.label, `intensity=${ev.intensity.toFixed(2)}`);
+    console.debug('[Haptikos]', ev.event_type, ev.label, `intensity=${ev.intensity.toFixed(2)}`);
   }
 }
 
@@ -583,7 +583,7 @@ async function startListening() {
 
     animationId = requestAnimationFrame(drawFrame);
   } catch (err) {
-    console.error('[IHear] Audio capture error:', err);
+    console.error('[Haptikos] Audio capture error:', err);
     statusDot.className    = 'dot dot--error';
     statusText.textContent = `Error: ${err.message}`;
   }
@@ -619,7 +619,7 @@ startBtn.addEventListener('click', () => {
 
 // ─── Event log ────────────────────────────────────────────────────────────────
 // Called by the detector loop above, and also exposed for the Socket.IO layer
-// (Fiona's sprint) via window.IHear.addEvent.
+// (Fiona's sprint) via window.Haptikos.addEvent.
 const MAX_LOG_ENTRIES = 10;
 
 /**
@@ -649,8 +649,8 @@ function addEvent(event) {
   if (items.length > MAX_LOG_ENTRIES) items[items.length - 1].remove();
 }
 
-// Expose for Socket.IO layer (Fiona's sprint) and phone-count updates.
-window.IHear = {
+// Expose for phone-count updates.
+window.Haptikos = {
   addEvent,
   setPhoneCount(n) {
     document.getElementById('phoneCount').textContent = n;
@@ -661,9 +661,9 @@ window.IHear = {
 // ─── Socket.IO ────────────────────────────────────────────────────────────────
 const socket = io({ transports: ['websocket'], query: { role: 'dashboard' } });
 
-socket.on('connect', () => { console.log('[IHear] Socket connected'); });
-socket.on('disconnect', () => { console.log('[IHear] Socket disconnected'); });
-socket.on('phone-count', (n) => { window.IHear.setPhoneCount(n); });
+socket.on('connect', () => { console.log('[Haptikos] Socket connected'); });
+socket.on('disconnect', () => { console.log('[Haptikos] Socket disconnected'); });
+socket.on('phone-count', (n) => { window.Haptikos.setPhoneCount(n); });
 
 // When a phone connects, measure round-trip latency for Spotify beat scheduling.
 let networkLatencyMs = 30;  // conservative default until measured
@@ -673,7 +673,7 @@ socket.on('phone-connected', () => {
 });
 socket.on('pong-phone', (t0) => {
   networkLatencyMs = Math.round((Date.now() - t0) / 2);
-  console.log(`[IHear] Network latency: ${networkLatencyMs}ms`);
+  console.log(`[Haptikos] Network latency: ${networkLatencyMs}ms`);
 });
 
 /**
@@ -774,7 +774,7 @@ function _scheduleBeatWindow(beats, progressMs) {
     }, delay);
     _beatTimeouts.push(t);
   }
-  console.log(`[IHear] Scheduled ${_beatTimeouts.length} beats (latency=${networkLatencyMs}ms)`);
+  console.log(`[Haptikos] Scheduled ${_beatTimeouts.length} beats (latency=${networkLatencyMs}ms)`);
 }
 
 /** Poll Spotify + re-schedule beats every 3 seconds to correct clock drift. */

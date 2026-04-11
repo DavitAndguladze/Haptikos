@@ -7,7 +7,7 @@
 	<key>CFBundleName</key>
 	<string>$(PRODUCT_NAME)</string>
 	<key>CFBundleDisplayName</key>
-	<string>IHear</string>
+	<string>Haptikos</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundlePackageType</key>
@@ -19,7 +19,7 @@
 	<key>NSCameraUsageDescription</key>
 	<string>Camera access is needed to scan the server QR code for pairing.</string>
 	<key>NSLocalNetworkUsageDescription</key>
-	<string>IHear connects to the local server to receive haptic events.</string>
+	<string>Haptikos connects to the local server to receive haptic events.</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsLocalNetworking</key>
