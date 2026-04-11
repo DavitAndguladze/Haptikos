@@ -1,0 +1,302 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		BF01 /* HapticSenseApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR01 /* HapticSenseApp.swift */; };
+		BF02 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR02 /* ContentView.swift */; };
+		BF03 /* HapticEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR03 /* HapticEvent.swift */; };
+		BF04 /* HapticPatterns.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR04 /* HapticPatterns.swift */; };
+		BF05 /* HapticEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR05 /* HapticEngine.swift */; };
+		BF06 /* HapticsDebugView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR06 /* HapticsDebugView.swift */; };
+		BF07 /* QRScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR07 /* QRScannerView.swift */; };
+		BF08 /* SocketManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR08 /* SocketManager.swift */; };
+		BF09 /* CoreHaptics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FR09 /* CoreHaptics.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		FR01 /* HapticSenseApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticSenseApp.swift; sourceTree = "<group>"; };
+		FR02 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		FR03 /* HapticEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticEvent.swift; sourceTree = "<group>"; };
+		FR04 /* HapticPatterns.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticPatterns.swift; sourceTree = "<group>"; };
+		FR05 /* HapticEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticEngine.swift; sourceTree = "<group>"; };
+		FR06 /* HapticsDebugView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticsDebugView.swift; sourceTree = "<group>"; };
+		FR07 /* QRScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRScannerView.swift; sourceTree = "<group>"; };
+		FR08 /* SocketManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocketManager.swift; sourceTree = "<group>"; };
+		FR09 /* CoreHaptics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreHaptics.framework; path = System/Library/Frameworks/CoreHaptics.framework; sourceTree = SDKROOT; };
+		PROD1 /* HapticSense.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HapticSense.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		FWBP1 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BF09 /* CoreHaptics.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		ROOT1 = {
+			isa = PBXGroup;
+			children = (
+				GRP_HS /* HapticSense */,
+				PRODGRP /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		PRODGRP /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				PROD1 /* HapticSense.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		GRP_HS /* HapticSense */ = {
+			isa = PBXGroup;
+			children = (
+				FR01 /* HapticSenseApp.swift */,
+				FR02 /* ContentView.swift */,
+				GRP_MOD /* Models */,
+				GRP_HAP /* Haptics */,
+				GRP_V /* Views */,
+				GRP_NET /* Network */,
+			);
+			path = HapticSense;
+			sourceTree = "<group>";
+		};
+		GRP_MOD /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				FR03 /* HapticEvent.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		GRP_HAP /* Haptics */ = {
+			isa = PBXGroup;
+			children = (
+				FR04 /* HapticPatterns.swift */,
+				FR05 /* HapticEngine.swift */,
+			);
+			path = Haptics;
+			sourceTree = "<group>";
+		};
+		GRP_V /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				FR06 /* HapticsDebugView.swift */,
+				FR07 /* QRScannerView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		GRP_NET /* Network */ = {
+			isa = PBXGroup;
+			children = (
+				FR08 /* SocketManager.swift */,
+			);
+			path = Network;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		NT1 /* HapticSense */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BCL_T /* Build configuration list for PBXNativeTarget "HapticSense" */;
+			buildPhases = (
+				SBP1 /* Sources */,
+				FWBP1 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = HapticSense;
+			productName = HapticSense;
+			productReference = PROD1 /* HapticSense.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		PJ1 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					NT1 = {
+						CreatedOnToolsVersion = 15.0;
+					};
+				};
+			};
+			buildConfigurationList = BCL_P /* Build configuration list for PBXProject "HapticSense" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = ROOT1;
+			productRefGroup = PRODGRP /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				NT1 /* HapticSense */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		SBP1 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BF01 /* HapticSenseApp.swift in Sources */,
+				BF02 /* ContentView.swift in Sources */,
+				BF03 /* HapticEvent.swift in Sources */,
+				BF04 /* HapticPatterns.swift in Sources */,
+				BF05 /* HapticEngine.swift in Sources */,
+				BF06 /* HapticsDebugView.swift in Sources */,
+				BF07 /* QRScannerView.swift in Sources */,
+				BF08 /* SocketManager.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		BC_P1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				ONLY_ACTIVE_ARCH = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		BC_P2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SWIFT_COMPILATION_MODE = wholemodule;
+			};
+			name = Release;
+		};
+		BC_T1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.hapticsense.HapticSense;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		BC_T2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.hapticsense.HapticSense;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		BCL_P /* Build configuration list for PBXProject "HapticSense" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BC_P1 /* Debug */,
+				BC_P2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BCL_T /* Build configuration list for PBXNativeTarget "HapticSense" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BC_T1 /* Debug */,
+				BC_T2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = PJ1 /* Project object */;
+}
