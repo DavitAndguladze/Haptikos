@@ -43,20 +43,21 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		ROOT1 = {
+		920FA5502F8A09E300899178 /* Recovered References */ = {
 			isa = PBXGroup;
 			children = (
-				GRP_HS /* HapticSense */,
-				PRODGRP /* Products */,
+				FR09 /* CoreHaptics.framework */,
 			);
+			name = "Recovered References";
 			sourceTree = "<group>";
 		};
-		PRODGRP /* Products */ = {
+		GRP_HAP /* Haptics */ = {
 			isa = PBXGroup;
 			children = (
-				PROD1 /* HapticSense.app */,
+				FR04 /* HapticPatterns.swift */,
+				FR05 /* HapticEngine.swift */,
 			);
-			name = Products;
+			path = Haptics;
 			sourceTree = "<group>";
 		};
 		GRP_HS /* HapticSense */ = {
@@ -80,13 +81,12 @@
 			path = Models;
 			sourceTree = "<group>";
 		};
-		GRP_HAP /* Haptics */ = {
+		GRP_NET /* Network */ = {
 			isa = PBXGroup;
 			children = (
-				FR04 /* HapticPatterns.swift */,
-				FR05 /* HapticEngine.swift */,
+				FR08 /* SocketManager.swift */,
 			);
-			path = Haptics;
+			path = Network;
 			sourceTree = "<group>";
 		};
 		GRP_V /* Views */ = {
@@ -98,12 +98,21 @@
 			path = Views;
 			sourceTree = "<group>";
 		};
-		GRP_NET /* Network */ = {
+		PRODGRP /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				FR08 /* SocketManager.swift */,
+				PROD1 /* HapticSense.app */,
 			);
-			path = Network;
+			name = Products;
+			sourceTree = "<group>";
+		};
+		ROOT1 = {
+			isa = PBXGroup;
+			children = (
+				GRP_HS /* HapticSense */,
+				PRODGRP /* Products */,
+				920FA5502F8A09E300899178 /* Recovered References */,
+			);
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -224,7 +233,7 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = L3Y658A93S;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -252,7 +261,7 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = L3Y658A93S;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
