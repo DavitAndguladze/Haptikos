@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IHear — Audio Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <h1>IHear</h1>
+    <p class="tagline">Making the invisible world of sound tangible</p>
+  </header>
+
+  <main>
+
+    <!-- Controls bar (spans full width) -->
+    <section class="controls">
+      <button id="startBtn">Start Listening</button>
+      <div class="status">
+        <span id="statusDot" class="dot dot--idle"></span>
+        <span id="statusText">Microphone inactive</span>
+      </div>
+    </section>
+
+    <!-- Frequency visualizer -->
+    <section class="visualizer-section">
+      <canvas id="visualizer"></canvas>
+      <div class="band-labels">
+        <span>Sub-bass</span>
+        <span>Bass</span>
+        <span>Mids</span>
+        <span>Highs</span>
+        <span>Presence</span>
+      </div>
+    </section>
+
+    <!-- Sidebar: QR code + event log -->
+    <aside class="sidebar">
+
+      <div class="qr-panel">
+        <h2>Connect Your Phone</h2>
+        <!--
+          The server /qr endpoint returns a PNG of the QR code.
+          Falls back to the placeholder div if the server is not running yet.
+        -->
+        <img id="qrCode" src="/qr" alt="QR code to connect phone"
+             onerror="this.style.display='none';
+                      document.getElementById('qrPlaceholder').style.display='flex'">
+        <div id="qrPlaceholder" class="qr-placeholder">
+          <span>QR code will appear when the server is running</span>
+        </div>
+        <div class="phones-count">
+          <span id="phoneCount">0</span>
+          phone<span id="phoneCountPlural">s</span> connected
+        </div>
+      </div>
+
+      <div class="event-log-panel">
+        <h2>Event Log</h2>
+        <ul id="eventLog" aria-live="polite" aria-label="Detected audio events">
+          <li class="event-log__empty">No events detected yet</li>
+        </ul>
+      </div>
+
+    </aside>
+
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
