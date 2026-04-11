@@ -3,70 +3,64 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>IHear — Audio Dashboard</title>
+  <title>IHear</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <header>
-    <h1>IHear</h1>
-    <p class="tagline">Making the invisible world of sound tangible</p>
-  </header>
+  <div class="page">
 
-  <main>
+    <h1 class="title">IHear</h1>
 
-    <!-- Controls bar (spans full width) -->
-    <section class="controls">
-      <button id="startBtn">Start Listening</button>
-      <div class="status">
-        <span id="statusDot" class="dot dot--idle"></span>
-        <span id="statusText">Microphone inactive</span>
-      </div>
-    </section>
-
-    <!-- Frequency visualizer -->
-    <section class="visualizer-section">
+    <!-- Radial visualizer + controls -->
+    <section class="viz-section">
       <canvas id="visualizer"></canvas>
-      <div class="band-labels">
-        <span>Sub-bass</span>
-        <span>Bass</span>
-        <span>Mids</span>
-        <span>Highs</span>
-        <span>Presence</span>
+
+      <div class="controls">
+        <button id="startBtn">Start Listening</button>
+        <div class="status" id="statusLine">
+          <span id="statusDot" class="dot dot--idle"></span>
+          <span id="statusText">Microphone Inactive</span>
+        </div>
       </div>
     </section>
 
-    <!-- Sidebar: QR code + event log -->
-    <aside class="sidebar">
+    <!-- Bottom 2-column grid -->
+    <div class="bottom-grid">
 
-      <div class="qr-panel">
-        <h2>Connect Your Phone</h2>
-        <!--
-          The server /qr endpoint returns a PNG of the QR code.
-          Falls back to the placeholder div if the server is not running yet.
-        -->
-        <img id="qrCode" src="/qr" alt="QR code to connect phone"
-             onerror="this.style.display='none';
-                      document.getElementById('qrPlaceholder').style.display='flex'">
-        <div id="qrPlaceholder" class="qr-placeholder">
-          <span>QR code will appear when the server is running</span>
-        </div>
-        <div class="phones-count">
-          <span id="phoneCount">0</span>
-          phone<span id="phoneCountPlural">s</span> connected
+      <!-- Left card: QR pairing -->
+      <div class="card">
+        <p class="card-title">Connect your Phone</p>
+        <div class="qr-body">
+          <!--
+            /qr returns a PNG from the server.
+            The onerror handler hides the img and shows the placeholder.
+          -->
+          <img id="qrCode" src="/qr" alt="QR code to connect phone"
+               onerror="this.style.display='none';
+                        document.getElementById('qrPlaceholder').style.display='flex'">
+          <div id="qrPlaceholder" class="qr-placeholder">
+            QR code will appear when the server is running
+          </div>
+          <p class="scan-hint">Scan with your iPhone</p>
+          <p class="phones-count" id="phonesCount">
+            <span id="phoneCount">0</span> phones connected
+          </p>
         </div>
       </div>
 
-      <div class="event-log-panel">
-        <h2>Event Log</h2>
-        <ul id="eventLog" aria-live="polite" aria-label="Detected audio events">
-          <li class="event-log__empty">No events detected yet</li>
+      <!-- Right card: event log -->
+      <div class="card">
+        <p class="card-title">Event Log</p>
+        <ul id="eventLog" class="log-list" aria-live="polite" aria-label="Detected audio events">
+          <li class="log-empty">No events detected yet</li>
         </ul>
       </div>
 
-    </aside>
+    </div>
 
-  </main>
+  </div>
 
   <script src="app.js"></script>
 </body>
