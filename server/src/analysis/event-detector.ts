@@ -53,6 +53,7 @@ export const DEFAULT_CONFIG: DetectorConfig = {
     rhythm_tap: 100,
     alert_snap: 100,
     sustained:  300,
+    stream:     0,
   },
 };
 
@@ -95,6 +96,7 @@ export class EventDetector {
     rhythm_tap: 0,
     alert_snap: 0,
     sustained:  0,
+    stream:     0,
   };
 
   // When each band first crossed sustainedThreshold this run (ms), or undefined.
@@ -226,6 +228,6 @@ export class EventDetector {
     this.prev           = { ...ZERO_BANDS };
     this.means          = { ...ZERO_BANDS };
     this.sustainedSince = {};
-    this.lastFired      = { bass_hit: 0, rhythm_tap: 0, alert_snap: 0, sustained: 0 };
+    this.lastFired      = { bass_hit: 0, rhythm_tap: 0, alert_snap: 0, sustained: 0, stream: 0 };
   }
 }

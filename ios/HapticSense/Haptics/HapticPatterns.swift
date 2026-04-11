@@ -61,6 +61,22 @@ enum HapticPatterns {
         return try CHHapticPattern(events: [event], parameters: [])
     }
 
+    /// Long-running continuous pattern used as the base for the haptic stream player.
+    /// Intensity and sharpness are updated in real-time via CHHapticAdvancedPatternPlayer.sendParameters().
+    /// Duration is 30 seconds — HapticEngine restarts the player before it expires.
+    static func streamBase() throws -> CHHapticPattern {
+        let event = CHHapticEvent(
+            eventType: .hapticContinuous,
+            parameters: [
+                CHHapticEventParameter(parameterID: .hapticIntensity, value: 0.0),
+                CHHapticEventParameter(parameterID: .hapticSharpness, value: 0.5),
+            ],
+            relativeTime: 0,
+            duration: 30.0
+        )
+        return try CHHapticPattern(events: [event], parameters: [])
+    }
+
     /// Slow pulse — continuous with intensity fade over `durationMs`.
     /// Sharpness scales with intensity (0.2 quiet → 0.5 loud).
     static func sustained(intensity: Float, durationMs: Double) throws -> CHHapticPattern {

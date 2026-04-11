@@ -181,6 +181,104 @@ class EventDetector {
   }
 }
 
+// ─── BeatPredictor ────────────────────────────────────────────────────────────
+// Once ≥4 bass_hit events establish a stable inter-beat interval (IBI), the
+// predictor schedules each haptic BEFORE detection to compensate for the OS
+// audio capture pipeline latency (~100-150ms) that makes detected beats lag
+// behind what already played through the speakers.
+//
+// State machine:
+//   REACTIVE — < MIN_BEATS_FOR_LOCK beats; emits immediately
+//   LOCKED   — IBI stable; schedules next haptic via setTimeout, self-corrects
+
+const PREDICTOR_CFG = {
+  WINDOW_SIZE:        12,    // last N beats for IBI median
+  MIN_BEATS_FOR_LOCK:  4,    // beats before switching to predictive mode
+  RESET_SILENCE_MS: 3000,    // ms without a beat → reset to reactive
+  MIN_IBI_MS:        250,    // floor: 240 BPM guard against double-triggers
+  MAX_IBI_MS:       2000,    // ceiling: 30 BPM guard against false positives
+};
+
+class BeatPredictor {
+  constructor() {
+    this._timestamps = [];
+    this._ibi        = null;
+    this._lastBeatAt = null;
+    this._locked     = false;
+    this._pendingId  = null;
+  }
+
+  /**
+   * Call on every detected bass_hit.
+   * Returns true  → caller should emit immediately (reactive fallback).
+   * Returns false → predictor owns this beat's haptic emission.
+   */
+  onBeat(event, emitFn, syncLeadMs, networkMs) {
+    const now = Date.now();
+    // Guard against double-triggers within the minimum beat interval.
+    if (this._lastBeatAt !== null && now - this._lastBeatAt < PREDICTOR_CFG.MIN_IBI_MS) {
+      return false;
+    }
+    this._timestamps.push(now);
+    if (this._timestamps.length > PREDICTOR_CFG.WINDOW_SIZE) this._timestamps.shift();
+    this._lastBeatAt = now;
+    this._recomputeIBI();
+    if (!this._locked) return true; // not enough data yet — reactive fallback
+    this._scheduleNext(event, emitFn, syncLeadMs, networkMs);
+    return false;
+  }
+
+  _recomputeIBI() {
+    if (this._timestamps.length < PREDICTOR_CFG.MIN_BEATS_FOR_LOCK) {
+      this._locked = false; this._ibi = null; return;
+    }
+    const intervals = [];
+    for (let i = 1; i < this._timestamps.length; i++) {
+      const d = this._timestamps[i] - this._timestamps[i - 1];
+      if (d >= PREDICTOR_CFG.MIN_IBI_MS && d <= PREDICTOR_CFG.MAX_IBI_MS) intervals.push(d);
+    }
+    if (intervals.length < PREDICTOR_CFG.MIN_BEATS_FOR_LOCK - 1) {
+      this._locked = false; this._ibi = null; return;
+    }
+    intervals.sort((a, b) => a - b);
+    const mid = Math.floor(intervals.length / 2);
+    this._ibi = intervals.length % 2 === 0
+      ? (intervals[mid - 1] + intervals[mid]) / 2
+      : intervals[mid];
+    this._locked = true;
+  }
+
+  _scheduleNext(event, emitFn, syncLeadMs, networkMs) {
+    // Cancel any previously scheduled beat — the new detection is the fresh anchor.
+    if (this._pendingId !== null) { clearTimeout(this._pendingId); this._pendingId = null; }
+    if (!this._ibi) return;
+    // delay = IBI − totalAdvance
+    // When this fires, totalAdvance ms will have elapsed since detection,
+    // compensating for the audio pipeline latency + network latency.
+    const delay = Math.max(0, this._ibi - syncLeadMs - networkMs);
+    const ev = { ...event, timestamp: Date.now() + delay, label: 'Beat' };
+    this._pendingId = setTimeout(() => {
+      this._pendingId = null;
+      emitFn(ev);
+    }, delay);
+  }
+
+  /** Call every analysis tick to detect a silence gap and auto-reset. */
+  tick() {
+    if (this._lastBeatAt && Date.now() - this._lastBeatAt > PREDICTOR_CFG.RESET_SILENCE_MS) {
+      this.reset();
+    }
+  }
+
+  reset() {
+    if (this._pendingId !== null) { clearTimeout(this._pendingId); this._pendingId = null; }
+    this._timestamps = []; this._ibi = null; this._lastBeatAt = null; this._locked = false;
+  }
+
+  get bpm()    { return this._locked && this._ibi ? Math.round(60000 / this._ibi) : null; }
+  get locked() { return this._locked; }
+}
+
 // ─── DOM refs ─────────────────────────────────────────────────────────────────
 const canvas      = document.getElementById('visualizer');
 const ctx         = canvas.getContext('2d');
@@ -204,6 +302,17 @@ let isListening       = false;
 let _lastBands        = null;   // shared between analysis and draw loops
 
 const detector  = new EventDetector(); // singleton — reset() when stream stops
+const predictor = new BeatPredictor(); // singleton — reset() when stream stops
+
+// Sync Lead: estimated OS audio capture pipeline latency.
+// Users tune this via slider until vibration feels in sync.
+// Persisted in localStorage so it survives page reloads.
+const SYNC_LEAD_DEFAULT_MS = 100;
+let _syncLeadMs = SYNC_LEAD_DEFAULT_MS;
+try {
+  const s = localStorage.getItem('ihear_sync_lead');
+  if (s !== null) { const p = parseInt(s, 10); if (!isNaN(p) && p >= 0 && p <= 400) _syncLeadMs = p; }
+} catch (_) {}
 
 // ─── Canvas setup ─────────────────────────────────────────────────────────────
 function setupCanvas() {
@@ -386,10 +495,35 @@ function runAnalysis() {
   analyser.getByteFrequencyData(dataArray);
   _lastBands = analyzeBands(dataArray);
   const events = detector.detect(_lastBands);
+
+  // Tick the predictor's silence watchdog every analysis frame.
+  predictor.tick();
+
+  // Continuous stream — fire every STREAM_INTERVAL_MS to convey full audio texture.
+  const _now = Date.now();
+  if (_now - _lastStreamEmit >= STREAM_INTERVAL_MS) {
+    _lastStreamEmit = _now;
+    _emitHapticStream();
+  }
+
   for (const ev of events) {
-    addEvent(ev);
-    emitHaptic(ev);
-    console.debug('[IHear]', ev.event_type, ev.label, `intensity=${ev.intensity.toFixed(2)}`);
+    if (ev.event_type === 'bass_hit') {
+      // Let the predictor decide: emit now (reactive) or schedule ahead (predictive).
+      const emitNow = predictor.onBeat(ev, (scheduled) => {
+        // This callback fires from a setTimeout in predictive mode.
+        addEvent(scheduled);
+        emitHaptic(scheduled);
+        _updateBpmDisplay();
+      }, _syncLeadMs, networkLatencyMs);
+
+      if (emitNow) { addEvent(ev); emitHaptic(ev); } // reactive fallback (< 4 beats)
+      _updateBpmDisplay();
+    } else {
+      // rhythm_tap, alert_snap, sustained — always emit immediately.
+      addEvent(ev);
+      emitHaptic(ev);
+    }
+    console.debug('[Haptikos]', ev.event_type, ev.label, `intensity=${ev.intensity.toFixed(2)}`);
   }
 }
 
@@ -400,22 +534,16 @@ function drawFrame() {
   animationId = requestAnimationFrame(drawFrame);
 }
 
-function startAnalysisTimer() {
-  if (analysisIntervalId) return;
-  analysisIntervalId = setInterval(runAnalysis, ANALYSIS_INTERVAL_MS);
-}
-
-function stopAnalysisTimer() {
-  if (analysisIntervalId) { clearInterval(analysisIntervalId); analysisIntervalId = null; }
-}
-
-// Pause drawing when hidden; analysis timer keeps running (e.g. Spotify in another tab).
+// Switch between rAF (visible) and setInterval (background) so analysis
+// keeps running even when the user switches to another tab.
 document.addEventListener('visibilitychange', () => {
   if (!isListening) return;
   if (document.hidden) {
     if (animationId) { cancelAnimationFrame(animationId); animationId = null; }
-  } else if (!animationId) {
-    animationId = requestAnimationFrame(drawFrame);
+    if (!analysisIntervalId) analysisIntervalId = setInterval(runAnalysis, 10);
+  } else {
+    if (analysisIntervalId) { clearInterval(analysisIntervalId); analysisIntervalId = null; }
+    if (!animationId) animationId = requestAnimationFrame(drawFrame);
   }
 });
 
@@ -458,7 +586,7 @@ async function startListening() {
 
     animationId = requestAnimationFrame(drawFrame);
   } catch (err) {
-    console.error('[IHear] Audio capture error:', err);
+    console.error('[Haptikos] Audio capture error:', err);
     statusDot.className    = 'dot dot--error';
     statusText.textContent = `Error: ${err.message}`;
   }
@@ -473,6 +601,9 @@ function stopListening() {
 
   isListening = false;
   detector.reset();
+  predictor.reset();   // cancel any pending beat timeout
+  _updateBpmDisplay(); // hide BPM badge
+  _lastStreamEmit = 0; // reset stream throttle
   for (const ring of RING_CONFIG) _ringPrev[ring.name].fill(0); // clear temporal state
 
   startBtn.textContent   = 'Start Listening';
@@ -491,7 +622,7 @@ startBtn.addEventListener('click', () => {
 
 // ─── Event log ────────────────────────────────────────────────────────────────
 // Called by the detector loop above, and also exposed for the Socket.IO layer
-// (Fiona's sprint) via window.IHear.addEvent.
+// (Fiona's sprint) via window.Haptikos.addEvent.
 const MAX_LOG_ENTRIES = 10;
 
 /**
@@ -521,8 +652,8 @@ function addEvent(event) {
   if (items.length > MAX_LOG_ENTRIES) items[items.length - 1].remove();
 }
 
-// Expose for Socket.IO layer (Fiona's sprint) and phone-count updates.
-window.IHear = {
+// Expose for phone-count updates.
+window.Haptikos = {
   addEvent,
   setPhoneCount(n) {
     document.getElementById('phoneCount').textContent = n;
@@ -533,9 +664,9 @@ window.IHear = {
 // ─── Socket.IO ────────────────────────────────────────────────────────────────
 const socket = io({ transports: ['websocket'], query: { role: 'dashboard' } });
 
-socket.on('connect', () => { console.log('[IHear] Socket connected'); });
-socket.on('disconnect', () => { console.log('[IHear] Socket disconnected'); });
-socket.on('phone-count', (n) => { window.IHear.setPhoneCount(n); });
+socket.on('connect', () => { console.log('[Haptikos] Socket connected'); });
+socket.on('disconnect', () => { console.log('[Haptikos] Socket disconnected'); });
+socket.on('phone-count', (n) => { window.Haptikos.setPhoneCount(n); });
 
 // When a phone connects, measure round-trip latency for Spotify beat scheduling.
 let networkLatencyMs = 30;  // conservative default until measured
@@ -545,147 +676,86 @@ socket.on('phone-connected', () => {
 });
 socket.on('pong-phone', (t0) => {
   networkLatencyMs = Math.round((Date.now() - t0) / 2);
-  console.log(`[IHear] Network latency: ${networkLatencyMs}ms`);
+  console.log(`[Haptikos] Network latency: ${networkLatencyMs}ms`);
 });
 
 /**
  * Emit a detected haptic event to the server so it relays to all phones.
- * Called from the analysis loop (audio mode) and beat scheduler (Spotify mode).
+ * Called from the analysis loop.
  */
 function emitHaptic(event) {
   if (socket.connected) socket.emit('haptic', event);
 }
 
-// ─── Spotify Beat Sync ────────────────────────────────────────────────────────
-let _spotifyToken    = null;
-let _spotifyTrackId  = null;
-let _beatTimeouts    = [];
-let _spotifySyncId   = null;   // setInterval for re-sync
-let _spotifyMode     = false;
+// ─── Continuous haptic stream ──────────────────────────────────────────────────
+// Emitted every STREAM_INTERVAL_MS regardless of beat detection.
+// iOS uses a single long-running CHHapticAdvancedPatternPlayer that gets live
+// parameter updates — intensity tracks loudness, sharpness tracks frequency
+// character (0 = sub-bass rumble → 1 = presence buzz). Together these let you
+// feel the full texture of the music, not just the beat onsets.
 
-const spotifyTrackEl = document.getElementById('spotifyTrack');
-const spotifyBtn     = document.getElementById('spotifyBtn');
-const audioHintEl    = document.getElementById('audioHint');
+const STREAM_INTERVAL_MS = 50;
+let _lastStreamEmit = 0;
 
-/** Cancel all pending beat timeouts. */
-function _clearBeatTimeouts() {
-  _beatTimeouts.forEach(clearTimeout);
-  _beatTimeouts = [];
-}
+function _emitHapticStream() {
+  if (!_lastBands) return;
+  const b = _lastBands;
 
-/**
- * Schedule beats from Spotify's analysis relative to where the track is now.
- * @param {Array}  beats       - from audio-analysis response
- * @param {number} progressMs  - current track position in ms
- */
-function _scheduleBeatWindow(beats, progressMs) {
-  _clearBeatTimeouts();
-  const refNow = Date.now();
+  // Perceptual loudness — bass and mids dominate tactile perception.
+  const raw = b.subBass * 0.12 + b.bass * 0.32 + b.mids * 0.30 + b.highs * 0.16 + b.presence * 0.10;
+  const intensity = Math.min(raw * 2.2, 1.0);
 
-  for (const beat of beats) {
-    const beatAbsMs  = beat.start * 1000;               // beat position in track (ms)
-    const fireInMs   = beatAbsMs - progressMs - networkLatencyMs;
-    if (fireInMs < -50) continue;                        // already passed
-    const delay      = Math.max(0, fireInMs);
-    const confidence = Math.min(beat.confidence ?? 0.8, 1.0);
-    const dur        = Math.round((beat.duration ?? 0.4) * 1000);
+  // Frequency centroid → sharpness: maps band energy to a 0–1 "brightness" value.
+  // Sub-bass = deep rumble (0), presence = sharp buzz (0.95).
+  const total = (b.subBass + b.bass + b.mids + b.highs + b.presence) || 1;
+  const sharpness =
+    (b.subBass * 0.00 + b.bass * 0.15 + b.mids * 0.42 + b.highs * 0.72 + b.presence * 0.95) / total;
 
-    const t = setTimeout(() => {
-      emitHaptic({
-        timestamp:  Date.now(),
-        event_type: 'bass_hit',
-        intensity:  Math.max(confidence, 0.5),           // floor so every beat registers
-        duration:   dur,
-        label:      'Beat',
-      });
-    }, delay);
-    _beatTimeouts.push(t);
-  }
-  console.log(`[IHear] Scheduled ${_beatTimeouts.length} beats (latency=${networkLatencyMs}ms)`);
-}
-
-/** Poll Spotify + re-schedule beats every 3 seconds to correct clock drift. */
-async function _spotifySyncTick(beats) {
-  const player = await window.SpotifyAPI.getCurrentlyPlaying(_spotifyToken);
-  if (!player || !player.is_playing) return;
-
-  // Track changed — restart with new analysis.
-  if (player.item?.id && player.item.id !== _spotifyTrackId) {
-    stopSpotifySync();
-    startSpotifySync();
-    return;
-  }
-
-  _scheduleBeatWindow(beats, player.progress_ms);
-}
-
-async function startSpotifySync() {
-  if (!_spotifyToken) return;
-
-  statusDot.className    = 'dot dot--active';
-  statusText.textContent = 'Spotify — loading track…';
-
-  const player = await window.SpotifyAPI.getCurrentlyPlaying(_spotifyToken);
-  if (!player || !player.item) {
-    statusText.textContent = 'Spotify — nothing playing';
-    return;
-  }
-  if (!player.is_playing) {
-    statusText.textContent = 'Spotify — paused';
-    return;
-  }
-
-  _spotifyTrackId = player.item.id;
-  const trackName = `${player.item.name} — ${(player.item.artists ?? []).map(a => a.name).join(', ')}`;
-  spotifyTrackEl.textContent = '♫ ' + trackName;
-  spotifyTrackEl.style.display = '';
-  statusText.textContent = 'Spotify Synced';
-  _spotifyMode = true;
-
-  const analysis = await window.SpotifyAPI.getAudioAnalysis(_spotifyToken, _spotifyTrackId);
-  if (!analysis?.beats?.length) {
-    statusText.textContent = 'Spotify — analysis unavailable';
-    return;
-  }
-
-  // Initial schedule using the progress from the earlier /player call.
-  // Fetch fresh progress right before scheduling to minimize offset error.
-  const fresh = await window.SpotifyAPI.getCurrentlyPlaying(_spotifyToken);
-  _scheduleBeatWindow(analysis.beats, fresh?.progress_ms ?? player.progress_ms);
-
-  _spotifySyncId = setInterval(() => _spotifySyncTick(analysis.beats), 3000);
-}
-
-function stopSpotifySync() {
-  _clearBeatTimeouts();
-  if (_spotifySyncId) { clearInterval(_spotifySyncId); _spotifySyncId = null; }
-  _spotifyMode    = false;
-  _spotifyTrackId = null;
-  spotifyTrackEl.style.display = 'none';
-}
-
-// Spotify connect button handler.
-if (spotifyBtn) {
-  spotifyBtn.addEventListener('click', async () => {
-    if (_spotifyMode) {
-      // Disconnect Spotify — back to audio mode.
-      stopSpotifySync();
-      _spotifyToken = null;
-      window.SpotifyAuth.clearToken();
-      spotifyBtn.textContent = 'Connect Spotify';
-      spotifyBtn.classList.remove('btn-spotify--active');
-      audioHintEl.style.display = '';
-      statusDot.className    = 'dot dot--idle';
-      statusText.textContent = 'Inactive';
-    } else {
-      window.SpotifyAuth.start();
-    }
+  // Always send (even at near-zero intensity) so iOS silences its stream player
+  // when music stops. The socket overhead of ~20 msg/s on LAN is negligible.
+  emitHaptic({
+    timestamp:  Date.now(),
+    event_type: 'stream',
+    intensity:  parseFloat(Math.max(0, intensity).toFixed(3)),
+    sharpness:  parseFloat(sharpness.toFixed(3)),
+    bands: {
+      subBass:  parseFloat(b.subBass.toFixed(3)),
+      bass:     parseFloat(b.bass.toFixed(3)),
+      mids:     parseFloat(b.mids.toFixed(3)),
+      highs:    parseFloat(b.highs.toFixed(3)),
+      presence: parseFloat(b.presence.toFixed(3)),
+    },
+    duration:   60,
+    label:      'Stream',
   });
+}
+
+/** Update the BPM badge — shown when predictor is locked, hidden otherwise. */
+function _updateBpmDisplay() {
+  const el = document.getElementById('bpmBadge');
+  if (!el) return;
+  const bpm = predictor.bpm;
+  el.textContent   = bpm ? `♫ ${bpm} BPM` : '';
+  el.style.display = bpm ? '' : 'none';
 }
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 setupCanvas();
 drawIdle();
+
+// Sync Lead slider — tunes OS audio capture pipeline latency estimate.
+const syncLeadSlider  = document.getElementById('syncLeadSlider');
+const syncLeadDisplay = document.getElementById('syncLeadDisplay');
+if (syncLeadSlider) {
+  syncLeadSlider.value        = _syncLeadMs;
+  syncLeadDisplay.textContent = `+${_syncLeadMs}ms`;
+  syncLeadSlider.addEventListener('input', () => {
+    _syncLeadMs = parseInt(syncLeadSlider.value, 10);
+    syncLeadDisplay.textContent = `+${_syncLeadMs}ms`;
+    try { localStorage.setItem('ihear_sync_lead', _syncLeadMs); } catch (_) {}
+    // Predictor picks up the new value on next _scheduleNext() — no reset needed.
+  });
+}
 
 let resizeTimer;
 window.addEventListener('resize', () => {
@@ -696,17 +766,3 @@ window.addEventListener('resize', () => {
   }, 100);
 });
 
-// Handle Spotify OAuth callback (?code= in URL) or restore existing session.
-(async () => {
-  if (typeof window.SpotifyAuth === 'undefined') return;
-  const token = await window.SpotifyAuth.handleCallback();
-  if (!token) return;
-
-  _spotifyToken = token;
-  spotifyBtn.textContent = 'Disconnect Spotify';
-  spotifyBtn.classList.add('btn-spotify--active');
-  audioHintEl.style.display = 'none';
-  startBtn.style.display    = 'none';    // Spotify mode — audio capture not needed
-
-  await startSpotifySync();
-})();

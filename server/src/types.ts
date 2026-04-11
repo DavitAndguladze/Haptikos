@@ -3,10 +3,18 @@
 
 export interface HapticEvent {
   timestamp: number;          // Date.now() when event was detected
-  event_type: 'bass_hit' | 'rhythm_tap' | 'alert_snap' | 'sustained';
+  event_type: 'bass_hit' | 'rhythm_tap' | 'alert_snap' | 'sustained' | 'stream';
   intensity: number;          // 0.0 – 1.0 (vibration strength)
   duration: number;           // milliseconds (how long the haptic should last)
   label: string;              // human-readable description for dashboard display
+  sharpness?: number;         // 0.0 – 1.0; only present on 'stream' events (frequency centroid)
+  bands?: {                   // per-band energies (0.0–1.0); only present on 'stream' events
+    subBass:  number;
+    bass:     number;
+    mids:     number;
+    highs:    number;
+    presence: number;
+  };
 }
 
 // Examples:

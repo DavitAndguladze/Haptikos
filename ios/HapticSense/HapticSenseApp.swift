@@ -1,7 +1,7 @@
 import SwiftUI
 
 @main
-struct HapticSenseApp: App {
+struct HaptikosApp: App {
     @Environment(\.scenePhase) private var scenePhase
     @StateObject private var socketManager = HapticSocketManager()
 

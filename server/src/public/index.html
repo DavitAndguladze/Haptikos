@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>IHear</title>
+  <title>Haptikos</title>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
@@ -11,7 +11,7 @@
 
   <div class="page">
 
-    <h1 class="title">IHear</h1>
+    <h1 class="title">Haptikos</h1>
 
     <!-- Radial visualizer + controls -->
     <section class="viz-section">
@@ -20,13 +20,19 @@
       <div class="controls">
         <div class="mode-row">
           <button id="startBtn">Start Listening</button>
-          <button id="spotifyBtn" class="btn-spotify">Paste Spotify Token</button>
         </div>
-        <p class="audio-hint" id="audioHint">Chrome will ask you to share your screen — pick <strong>Entire Screen</strong>, check <strong>"Share system audio"</strong>, then click Share.</p>
-        <p class="spotify-track" id="spotifyTrack" style="display:none"></p>
+        <p class="audio-hint">Chrome will ask you to share your screen — pick <strong>Entire Screen</strong>, check <strong>"Share system audio"</strong>, then click Share.</p>
         <div class="status" id="statusLine">
           <span id="statusDot" class="dot dot--idle"></span>
           <span id="statusText">Inactive</span>
+        </div>
+        <div class="sync-row">
+          <span id="bpmBadge" class="bpm-badge" style="display:none"></span>
+          <label class="sync-label" for="syncLeadSlider">Sync Lead</label>
+          <input id="syncLeadSlider" class="sync-slider" type="range"
+                 min="0" max="400" step="5" value="100"
+                 aria-label="Audio pipeline latency compensation in milliseconds">
+          <span id="syncLeadDisplay" class="sync-value">+100ms</span>
         </div>
       </div>
     </section>
@@ -68,7 +74,6 @@
   </div>
 
   <script src="/socket.io/socket.io.js"></script>
-  <script src="spotify.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
