@@ -1,0 +1,13 @@
+node_modules/
+dist/
+.env
+*.log
+
+# macOS
+.DS_Store
+
+# Xcode
+ios/HapticSense.xcodeproj/project.xcworkspace/xcuserdata/
+ios/*.xcodeproj/xcuserdata/
+ios/DerivedData/
+ios/.build/
