@@ -715,6 +715,13 @@ function _emitHapticStream() {
     event_type: 'stream',
     intensity:  parseFloat(Math.max(0, intensity).toFixed(3)),
     sharpness:  parseFloat(sharpness.toFixed(3)),
+    bands: {
+      subBass:  parseFloat(b.subBass.toFixed(3)),
+      bass:     parseFloat(b.bass.toFixed(3)),
+      mids:     parseFloat(b.mids.toFixed(3)),
+      highs:    parseFloat(b.highs.toFixed(3)),
+      presence: parseFloat(b.presence.toFixed(3)),
+    },
     duration:   60,
     label:      'Stream',
   });

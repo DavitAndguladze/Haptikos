@@ -8,6 +8,13 @@ export interface HapticEvent {
   duration: number;           // milliseconds (how long the haptic should last)
   label: string;              // human-readable description for dashboard display
   sharpness?: number;         // 0.0 – 1.0; only present on 'stream' events (frequency centroid)
+  bands?: {                   // per-band energies (0.0–1.0); only present on 'stream' events
+    subBass:  number;
+    bass:     number;
+    mids:     number;
+    highs:    number;
+    presence: number;
+  };
 }
 
 // Examples:

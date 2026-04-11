@@ -19,6 +19,7 @@
 		B7F130A2D2CF319A41274A45 /* HapticSenseApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ABB9C9698529732A0EDC09B /* HapticSenseApp.swift */; };
 		D9A30935E7B1AFAC235D74BD /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2B2FD8A4EF7333A210FCDE86 /* AVFoundation.framework */; };
 		F1A2B3C4D5E6F7A8B9C0D1E2 /* HapticsDebugView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6A7B8C9D0E1F2 /* HapticsDebugView.swift */; };
+		C1D2E3F4A5B6C7D8E9F0A1B2 /* RadialRingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2E3F4A5B6C7D8E9F0A1B2C3 /* RadialRingView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -45,6 +46,7 @@
 		7650A666027F473AAE43466C /* QRScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRScannerView.swift; sourceTree = "<group>"; };
 		96715353C6FD6D1785B2AEB5 /* HapticPatterns.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticPatterns.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F6A7B8C9D0E1F2 /* HapticsDebugView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticsDebugView.swift; sourceTree = "<group>"; };
+		D2E3F4A5B6C7D8E9F0A1B2C3 /* RadialRingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RadialRingView.swift; sourceTree = "<group>"; };
 		A6DF0C3BC2E92216F0228D53 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		C94530AE1A801DC4F2773D2F /* .cursorrules */ = {isa = PBXFileReference; lastKnownFileType = text; path = .cursorrules; sourceTree = "<group>"; };
 		D361DAB8A8038AE1BC2CE2D9 /* HapticEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticEngine.swift; sourceTree = "<group>"; };
@@ -105,6 +107,7 @@
 				A1B2C3D4E5F6A7B8C9D0E1F2 /* HapticsDebugView.swift */,
 				3B42D5CE394C8789422C542E /* PulsingOrbView.swift */,
 				7650A666027F473AAE43466C /* QRScannerView.swift */,
+				D2E3F4A5B6C7D8E9F0A1B2C3 /* RadialRingView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -206,6 +209,7 @@
 				F1A2B3C4D5E6F7A8B9C0D1E2 /* HapticsDebugView.swift in Sources */,
 				B6B2F8CF9415FCF2E03E9E4C /* PulsingOrbView.swift in Sources */,
 				7F52A104C1162353FE5148D9 /* QRScannerView.swift in Sources */,
+				C1D2E3F4A5B6C7D8E9F0A1B2 /* RadialRingView.swift in Sources */,
 				3152F06DA6FA46A460EAE889 /* SocketManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
